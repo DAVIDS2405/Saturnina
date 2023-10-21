@@ -1,17 +1,13 @@
-#imports
 from app.server import app
-from dotenv import load_dotenv
-import uvicorn
-import os
+from app.database.database import Connection
 
-# Environment Variables
-load_dotenv()
+@app.on_event("startup")
+async def startup_event():
+    await Connection()
 
 
-#class main
-if __name__ == "__main__":
 
-    host = os.getenv("HOST")
-    port = os.getenv("PORT")
 
-    uvicorn.run(app, host=host, port=port)
+
+
+

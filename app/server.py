@@ -11,9 +11,8 @@ app = FastAPI(
     version="1.0",
     openapi_url="/api/v1/openapi.json",
 )   
-app.include_router(login_routers.router,prefix="/api")
+app.include_router(login_routers.router,prefix="/api/v1")
  
-app.add_middleware(CORSMiddleware)
 
 @app.get("/",include_in_schema=False)
 async def read_root():

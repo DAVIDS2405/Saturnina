@@ -1,9 +1,17 @@
-from app.server import app
-from app.database.database import Connection
+import asyncio
+import uvicorn
+import os
+from dotenv import load_dotenv
 
-@app.on_event("startup")
-async def startup_event():
-    await Connection()
+
+if __name__ == "__main__":
+    # Environment Variables
+    load_dotenv()
+    host = os.getenv("HOST")  # Host configuration
+    port = int(os.getenv("PORT", 8000))   # Port configuration
+    uvicorn.run("app.server:app", host=str(host), port=int(port), reload=True)
+
+
 
 
 

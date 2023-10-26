@@ -11,10 +11,9 @@ namespace_db = os.getenv("NAMESPACE_DB")
 database_db = os.getenv("DATABASE_DB")
 
 async def Connection():
-    conn = None  # Inicializa la variable de conexión
     try:
-        conn = Surreal("http://localhost:8000")
-        await conn.connect()
+        conn = Surreal()
+        await conn.connect("wss://suturnina-db.fly.dev")
         await conn.signin({"user": f"{username_db}", "pass": f"{password_db}"})
         await conn.use(f"{namespace_db}", f"{database_db}")
         return conn

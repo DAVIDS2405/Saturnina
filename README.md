@@ -1,6 +1,6 @@
 # Project Introduction
 
-![FastAPI](https://example.com/fastapi_image.png)
+![FastAPI](https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png)
 
 Welcome to the project "Saturnina"! This project is a backend application designed and developed by **David Basantes**.
 

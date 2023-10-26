@@ -4,6 +4,7 @@ from fastapi import HTTPException
 import os 
 
 load_dotenv()
+url_db = os.getenv("URL_DB")
 username_db = os.getenv("USER_DB")
 password_db = os.getenv("PASSWORD_DB")
 namespace_db = os.getenv("NAMESPACE_DB")
@@ -16,7 +17,6 @@ async def Connection():
         await conn.connect()
         await conn.signin({"user": f"{username_db}", "pass": f"{password_db}"})
         await conn.use(f"{namespace_db}", f"{database_db}")
-        print("Conexión exitosa")
         return conn
     except Exception as e:
         print("Ocurrió un error con surreal:", str(e))

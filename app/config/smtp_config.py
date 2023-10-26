@@ -2,9 +2,11 @@ import smtplib
 import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from dotenv import load_dotenv
 
 class smtp_config:
-    def __init__(self, smtp_server, smtp_port, smtp_user, smtp_password):
+    load_dotenv()
+    def __init__(self):
         self.smtp_server = "smtp.gmail.com"
         self.smtp_port = 587
         self.smtp_user = os.getenv("USER_GMAIL")
@@ -87,11 +89,11 @@ body {{
         <h1 class="title">Activación de Cuenta</h1>
     </div>
     <p>Hola,</p>
-    <p>¡Gracias por registrarte en nuestro sitio! Para activar tu cuenta, por favor haz clic en el enlace de abajo:</p>
-    <a class="activation-link" href="http://localhost:8080/api/v1/activar_cuenta">Activar Cuenta</a>
+    <p>¡Gracias por registrarte! Para activar tu cuenta, por favor haz clic en el enlace de abajo:</p>
+    <a class="activation-link" href="http://localhost:8080/api/v1/check-email/{token}">Activar Cuenta</a>
     <div class="footer">
         <p>Atentamente,</p>
-        <p>Tu Equipo de Soporte</p>
+        <p>Tu Equipo de Soporte de Saturnina</p>
     </div>
 </div>
 </body>

@@ -1,7 +1,10 @@
 annotated-types==0.6.0
 anyio==3.7.1
+bcrypt==4.0.1
 certifi==2023.7.22
 click==8.1.7
+dnspython==2.4.2
+email-validator==2.1.0
 fastapi==0.104.0
 h11==0.14.0
 httpcore==0.18.0

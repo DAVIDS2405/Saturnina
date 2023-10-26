@@ -1,7 +1,6 @@
 from fastapi import HTTPException,status
 from app.config.smtp_config import smtp_config
 from app.database.database import Connection
-import json
 from app.models.user_model import User_DB
 
     

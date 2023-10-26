@@ -13,7 +13,7 @@ database_db = os.getenv("DATABASE_DB")
 async def Connection():
     try:
         conn = Surreal()
-        await conn.connect("wss://suturnina-db.fly.dev")
+        await conn.connect(f"{url_db}")
         await conn.signin({"user": f"{username_db}", "pass": f"{password_db}"})
         await conn.use(f"{namespace_db}", f"{database_db}")
         return conn

@@ -14,6 +14,7 @@ class smtp_config:
         self.smtp_password = os.getenv("PASSWORD_GMAIL")
 
     def send_user(self, user_mail,token):
+        url_service = os.getenv("URL_SERVICE_WEB")
         smtp = smtplib.SMTP(self.smtp_server, self.smtp_port)
         smtp.starttls()
         smtp.login(self.smtp_user, self.smtp_password)
@@ -22,7 +23,6 @@ class smtp_config:
         mensaje['From'] = self.smtp_user
         mensaje['To'] = user_mail
         mensaje['Subject'] = "Bienvenido es hora de tu registro"
-        render_service = os.getenv("RENDER_URL")
         content_html = f"""
 <html>
 <head>
@@ -91,7 +91,7 @@ body {{
     </div>
     <p>Hola,</p>
     <p>¡Gracias por registrarte! Para activar tu cuenta, por favor haz clic en el enlace de abajo:</p>
-    <a class="activation-link" href="{render_service}/api/v1/check-email/{token}">Activar Cuenta</a>
+    <a class="activation-link" href="http://{url_service}/api/v1/check-email/{token}">Activar Cuenta</a>
     <div class="footer">
         <p>Atentamente,</p>
         <p>Tu Equipo de Soporte de Saturnina</p>

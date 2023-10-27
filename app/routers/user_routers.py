@@ -1,6 +1,7 @@
-from fastapi import APIRouter,status,Body, Path
+from fastapi import APIRouter,status,Body, Depends
 from app.controllers.user_controller import Confirm_email, Login, Register
-from app.models.user_model import User_Login, User_Register, User_DB
+from app.models.user_model import User_Login, User_Register
+from app.middlewares.Bearer import JWTBearer
 
 
 router = APIRouter(
@@ -28,10 +29,6 @@ async def Registro_usuario(data:User_Register = Body(example={
         response = await Register(data)  
         return response  
 
-   
-
-
-
 
 @router.get("/check-email/{token}")
 async def Confirmar_cuenta(token: str):
@@ -50,21 +47,22 @@ async def Confirmar_cuenta():
 async def Confirmar_cuenta():
     return "Hello world"
 
-@router.get("/profile")
+@router.get("/profile",dependencies=[Depends(JWTBearer())])
 async def Confirmar_cuenta():
     return "Hello world"
 
 
-@router.put("/update-password/{token}")
+@router.put("/update-password/{token}",dependencies=[Depends(JWTBearer())])
 async def Confirmar_cuenta():
     return "Hello world"
 
 
-@router.get("/user/{id}")
+@router.get("/user/{id}",dependencies=[Depends(JWTBearer())])
 async def Confirmar_cuenta():
+    
     return "Hello world"
 
-@router.put("/user/{id}")
+@router.put("/user/{id}",dependencies=[Depends(JWTBearer())])
 async def Confirmar_cuenta():
     return "Hello world"
 

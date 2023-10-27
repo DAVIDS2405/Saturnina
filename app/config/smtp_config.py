@@ -2,10 +2,8 @@ import smtplib
 import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from dotenv import load_dotenv
 
 class smtp_config:
-    load_dotenv()
     
     def __init__(self):
         self.smtp_server = "smtp.gmail.com"

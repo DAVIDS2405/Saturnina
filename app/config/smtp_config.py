@@ -89,7 +89,7 @@ body {{
     </div>
     <p>Hola,</p>
     <p>¡Gracias por registrarte! Para activar tu cuenta, por favor haz clic en el enlace de abajo:</p>
-    <a class="activation-link" href="http://{url_service}/api/v1/check-email/{token}">Activar Cuenta</a>
+    <a class="activation-link" href="https://{url_service}/api/v1/check-email/{token}">Activar Cuenta</a>
     <div class="footer">
         <p>Atentamente,</p>
         <p>Tu Equipo de Soporte de Saturnina</p>
@@ -115,7 +115,7 @@ body {{
         mensaje = MIMEMultipart()
         mensaje['From'] = self.smtp_user
         mensaje['To'] = user_mail
-        mensaje['Subject'] = "Bienvenido es hora de tu registro"
+        mensaje['Subject'] = "Recupera tu contraseña"
         content_html = f"""
 <html>
 <head>
@@ -184,7 +184,7 @@ body {{
     </div>
     <p>Hola,</p>
     <p>Has solicitado la recuperación de tu contraseña. Para restablecer tu contraseña, por favor haz clic en el enlace de abajo:</p>
-    <a class="recovery-link" href="http://{url_service}/api/v1/recover-password/{token}">Recuperar Contraseña</a>
+    <a class="recovery-link" href="http://localhost:8000/api/v1/recover-password/{token}">Recuperar Contraseña</a>
     <div class="footer">
         <p>Atentamente,</p>
         <p>Tu Equipo de Soporte de Saturnina</p>

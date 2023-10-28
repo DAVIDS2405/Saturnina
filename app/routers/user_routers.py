@@ -1,8 +1,8 @@
 from fastapi import APIRouter,status,Body, Depends
-from controllers.user_controller import Confirm_email, Login, Recover_Password, Register
-from models.user_model import User_Login, User_Register
+from controllers.user_controller import Check_email, Check_token, Login, New_password, Recover_Password, Register
+from models.user_model import Email_User, User_Login, User_Recover_Password, User_Register
 from middlewares.Bearer import JWTBearer
-
+from pydantic import EmailStr
 
 router = APIRouter(
     tags=["Usuario"],
@@ -32,21 +32,25 @@ async def Registro_usuario(data:User_Register = Body(example={
 
 @router.get("/check-email/{token}")
 async def Confirmar_cuenta(token: str):
-    response = await Confirm_email(token)
+    response = await Check_email(token)
     return response
 
 @router.post("/recover-password")
-async def Recuperar_Contrasenia(email: str):
-    response = await Recover_Password(email)
+async def Recuperar_Contrasenia(data:Email_User = Body(example={
+    "email":"sebastian2405lucero@hotmail.com",
+})):
+    response = await Recover_Password(data)
     return response
 
 @router.get("/recover-password/{token}")
-async def Confirmar_cuenta():
-    return "Hello world"
+async def Confirmar_cuenta(token:str):
+    response = await Check_token(token)
+    return response
 
 @router.post("/new-password/{token}")
-async def Confirmar_cuenta():
-    return "Hello world"
+async def Confirmar_cuenta(token:str,password:User_Recover_Password):
+    response = New_password(token,password)
+    return response
 
 @router.get("/profile",dependencies=[Depends(JWTBearer())])
 async def Confirmar_cuenta():

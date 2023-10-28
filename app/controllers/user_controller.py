@@ -42,7 +42,8 @@ async def Login(data):
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=data_user_filtered)
     
     
-async def Register(data):    
+async def Register(data): 
+  
     email = data.email
     User_Db = await Connection()
     Check_email = await User_Db.select("user_saturnina")
@@ -70,7 +71,7 @@ async def Register(data):
         
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail={'msg':"Revisa tu correo para activar tu cuenta"})
 
-async def Confirm_email(data):
+async def Check_email(data):
     
     User_Db = await Connection()
     
@@ -81,6 +82,10 @@ async def Confirm_email(data):
         if(user.get("token") == data):
             user = user
             break
+     
+    if user is None:
+        await User_DB.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta cuenta no existe"})
         
     if user.get("token") is None:
         await User_Db.close()
@@ -98,7 +103,7 @@ async def Confirm_email(data):
   
 
 async def Recover_Password (data):
-    email = data
+    email = data.email
     User_Db = await Connection()
     
     email_user_register = await User_Db.select("user_saturnina")
@@ -114,14 +119,49 @@ async def Recover_Password (data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"Usuario no registrado"})
     
+    if user.get('confirmEmail') is not True:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"Necesita activar su cuenta"})
+    
     new_User = User_DB(**user)
     token = new_User.generate_token()
 
     await User_Db.query('update ($id) merge {"token":($token_new),"confirmEmail":false};' ,{"id":user.get("id"),"token_new":token})
-    
+    await User_Db.close()
+
     email_sender = smtp_config()
     email_sender.Recover_password(user_mail=email,token=token)
-    await User_Db.close()
     raise HTTPException(status_code=status.HTTP_201_CREATED, detail={'msg':"Revisa tu correo"})
 
+async def Check_token(data):
+    
+    User_Db = await Connection()
+    
+    token_user = await User_Db.select("user_saturnina")
+    user = None
+    
+    for user in token_user:
+        if(user.get("token") == data):
+            user = user
+            break
+    
+    if user is None:
+        await User_DB.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta cuenta no existe"})
+    if user.get("token") is None:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"La cuenta ya ha sido confirmada"})
 
+    elif user.get("token") != data:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"msg": "Lo sentimos, no se puede validar la cuenta"})
+
+
+    
+    
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_200_OK, detail={"msg":"Token confirmado ya puedes crear tu nueva contraseña"})
+
+async def New_password(data,token):
+    new_password = data.new_password
+    check_new_password = data.check_new_password

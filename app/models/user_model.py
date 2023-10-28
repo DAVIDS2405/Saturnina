@@ -3,6 +3,11 @@ import string
 import bcrypt
 from pydantic import BaseModel, EmailStr, Field, SecretStr
 
+class Email_User(BaseModel):
+    email:EmailStr
+class User_Recover_Password(BaseModel):
+    new_password: SecretStr
+    check_password:SecretStr
 class User_Login(BaseModel):
     email: EmailStr
     password: SecretStr 
@@ -31,7 +36,7 @@ class User_DB (User_Register):
     def verify_password(plain_password,password_bd: str) -> bool:
         return bcrypt.checkpw(plain_password.get_secret_value().encode(),password_bd.encode('utf-8'))
     
-    
+   
     
 
 

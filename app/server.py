@@ -21,9 +21,9 @@ app.add_middleware(
     allow_methods=["*"],  # Puedes restringir los métodos específicos (e.g., ["GET", "POST"])
     allow_headers=["*"],  # Puedes restringir los encabezados específicos
 )
+app.include_router(user_routers.router,prefix="/api/v1")
 
 @app.get("/",include_in_schema=False)
 async def read_root():
     return RedirectResponse("/api/v1/docs")
 
-app.include_router(user_routers.router,prefix="/api/v1")

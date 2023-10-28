@@ -1,5 +1,5 @@
 from fastapi import APIRouter,status,Body, Depends
-from controllers.user_controller import Confirm_email, Login, Register
+from controllers.user_controller import Confirm_email, Login, Recover_Password, Register
 from models.user_model import User_Login, User_Register
 from middlewares.Bearer import JWTBearer
 
@@ -36,8 +36,9 @@ async def Confirmar_cuenta(token: str):
     return response
 
 @router.post("/recover-password")
-async def Confirmar_cuenta():
-    return "Hello world"
+async def Recuperar_Contrasenia(email: str):
+    response = await Recover_Password(email)
+    return response
 
 @router.get("/recover-password/{token}")
 async def Confirmar_cuenta():

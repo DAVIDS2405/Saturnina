@@ -96,6 +96,32 @@ async def Confirm_email(data):
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_200_OK, detail={"msg":"Ya puedes iniciar sesion"})
   
-async def detail_User (data):
-    id = data.id
+
+async def Recover_Password (data):
+    email = data
+    User_Db = await Connection()
     
+    email_user_register = await User_Db.select("user_saturnina")
+    
+    user = None
+    
+    for user in email_user_register:
+        if(user.get("email") == email):
+            user = user
+            break
+    
+    if user is None:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"Usuario no registrado"})
+    
+    new_User = User_DB(**user)
+    token = new_User.generate_token()
+
+    await User_Db.query('update ($id) merge {"token":($token_new),"confirmEmail":false};' ,{"id":user.get("id"),"token_new":token})
+    
+    email_sender = smtp_config()
+    email_sender.Recover_password(user_mail=email,token=token)
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_201_CREATED, detail={'msg':"Revisa tu correo"})
+
+

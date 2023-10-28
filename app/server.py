@@ -14,7 +14,13 @@ app = FastAPI(
     
 )   
 
- 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Especifica los orígenes permitidos
+    allow_credentials=True,
+    allow_methods=["*"],  # Puedes restringir los métodos específicos (e.g., ["GET", "POST"])
+    allow_headers=["*"],  # Puedes restringir los encabezados específicos
+)
 
 @app.get("/",include_in_schema=False)
 async def read_root():

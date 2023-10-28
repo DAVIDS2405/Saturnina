@@ -8,7 +8,7 @@ if __name__ == "__main__":
     load_dotenv()
     host = os.getenv("HOST")  # Host configuration
     port = int(os.getenv("PORT"))   # Port configuration
-    uvicorn.run("app.server:app", host=str(host), port=int(port), reload=True)
+    uvicorn.run("server:app", host=str(host), port=int(port), reload=True)
 
 
 

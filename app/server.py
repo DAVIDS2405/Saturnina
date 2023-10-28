@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from app.routers import user_routers
+from routers import user_routers
 
 
 app = FastAPI(
@@ -13,9 +13,11 @@ app = FastAPI(
     redoc_url=None,
     
 )   
-app.include_router(user_routers.router,prefix="/api/v1")
+
  
 
 @app.get("/",include_in_schema=False)
 async def read_root():
     return RedirectResponse("/api/v1/docs")
+
+app.include_router(user_routers.router,prefix="/api/v1")

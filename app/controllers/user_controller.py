@@ -1,8 +1,8 @@
 from fastapi import HTTPException,status
-from app.config.smtp_config import smtp_config
-from app.database.database import Connection
-from app.helpers.jwt_helper import signJWT
-from app.models.user_model import User_DB
+from config.smtp_config import smtp_config
+from database.database import Connection
+from helpers.jwt_helper import signJWT
+from models.user_model import User_DB
     
 async def Login(data):
     

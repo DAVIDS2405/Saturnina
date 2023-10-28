@@ -1,7 +1,7 @@
 from fastapi import APIRouter,status,Body, Depends
-from app.controllers.user_controller import Confirm_email, Login, Register
-from app.models.user_model import User_Login, User_Register
-from app.middlewares.Bearer import JWTBearer
+from controllers.user_controller import Confirm_email, Login, Register
+from models.user_model import User_Login, User_Register
+from middlewares.Bearer import JWTBearer
 
 
 router = APIRouter(

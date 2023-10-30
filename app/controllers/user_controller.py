@@ -2,7 +2,7 @@ from fastapi import HTTPException,status
 from config.smtp_config import smtp_config
 from database.database import Connection
 from helpers.jwt_helper import signJWT
-from models.user_model import User_DB
+from models.user_model import User_DB, User_Recover_Password
     
 async def Login(data):
     
@@ -37,7 +37,7 @@ async def Login(data):
     
     if(check_password is not True):
         await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"La contraseñas es incorrecta intenta de nuevo"})
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"La contraseña es incorrecta intenta de nuevo"})
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=data_user_filtered)
     
@@ -155,13 +155,46 @@ async def Check_token(data):
     elif user.get("token") != data:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"msg": "Lo sentimos, no se puede validar la cuenta"})
-
-
-    
     
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_200_OK, detail={"msg":"Token confirmado ya puedes crear tu nueva contraseña"})
 
-async def New_password(data,token):
+async def New_password(token,data):
     new_password = data.new_password
-    check_new_password = data.check_new_password
+    check_new_password = data.check_password
+    User_Db = await Connection()
+    user = None
+    
+    check_token = await User_Db.select("user_saturnina")
+    if(new_password != check_new_password):
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Las password no coinciden"})
+    
+    for user in check_token:
+        if(user.get('token') == token):
+            user = user
+            break
+    
+    if user is None:
+        await User_DB.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta cuenta no existe"})
+    
+    if user.get("token") is None:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"La cuenta ya ha sido confirmada"})
+    
+    if user.get("token") != token:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"msg": "Lo sentimos, no se puede validar la cuenta"})
+    
+
+    new_User = User_Recover_Password(**data.dict())
+    
+    new_User.new_password = new_User.encrypt_password()
+    new_User = new_User.dict()
+    new_User['new_password'] = new_User['new_password'].decode("utf-8")
+    password = new_User['new_password']
+    print(new_User['new_password'])
+    
+    await User_Db.query('update ($id) merge {"token":null,"confirmEmail":true,"password":($password_new)};' ,{"id":user.get("id"),"password_new":password})
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_200_OK, detail={"msg":"Tu contraseña a sido actualizada ya puedes iniciar sesion"})

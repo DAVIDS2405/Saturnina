@@ -48,8 +48,11 @@ async def Confirmar_cuenta(token:str):
     return response
 
 @router.post("/new-password/{token}")
-async def Confirmar_cuenta(token:str,password:User_Recover_Password):
-    response = New_password(token,password)
+async def Confirmar_cuenta(token:str,password:User_Recover_Password = Body(example={
+    "new_password":"change123",
+    "check_password":"change123",
+})):
+    response = await New_password(token,password)
     return response
 
 @router.get("/profile",dependencies=[Depends(JWTBearer())])

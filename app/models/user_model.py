@@ -8,6 +8,12 @@ class Email_User(BaseModel):
 class User_Recover_Password(BaseModel):
     new_password: SecretStr
     check_password:SecretStr
+    
+    def encrypt_password(self) -> str:
+        salt = bcrypt.gensalt(10)
+        hashed_password = bcrypt.hashpw(self.new_password.get_secret_value().encode('utf-8'), salt)
+        bcrypt.hashpw(self.check_password.get_secret_value().encode('utf-8'), salt)
+        return hashed_password  
 class User_Login(BaseModel):
     email: EmailStr
     password: SecretStr 

@@ -48,7 +48,7 @@ async def Confirmar_cuenta(token:str):
     return response
 
 @router.post("/new-password/{token}")
-async def Confirmar_cuenta(token:str,password:User_Recover_Password = Body(example={
+async def Nueva_Contrasenia(token:str,password:User_Recover_Password = Body(example={
     "new_password":"change123",
     "check_password":"change123",
 })):

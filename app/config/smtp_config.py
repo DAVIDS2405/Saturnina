@@ -184,7 +184,7 @@ body {{
     </div>
     <p>Hola,</p>
     <p>Has solicitado la recuperación de tu contraseña. Para restablecer tu contraseña, por favor haz clic en el enlace de abajo:</p>
-    <a class="recovery-link" href="http://localhost:8000/api/v1/recover-password/{token}">Recuperar Contraseña</a>
+    <a class="recovery-link" href="http://{url_service}/api/v1/recover-password/{token}">Recuperar Contraseña</a>
     <div class="footer">
         <p>Atentamente,</p>
         <p>Tu Equipo de Soporte de Saturnina</p>

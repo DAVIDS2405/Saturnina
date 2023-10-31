@@ -14,6 +14,9 @@ class User_Recover_Password(BaseModel):
         hashed_password = bcrypt.hashpw(self.new_password.get_secret_value().encode('utf-8'), salt)
         bcrypt.hashpw(self.check_password.get_secret_value().encode('utf-8'), salt)
         return hashed_password  
+    
+    def verify_password(plain_password,password_bd: str) -> bool:
+        return bcrypt.checkpw(plain_password.get_secret_value().encode(),password_bd.encode('utf-8'))
 class User_Login(BaseModel):
     email: EmailStr
     password: SecretStr 
@@ -21,13 +24,19 @@ class User_Register(User_Login):
     nombre: str 
     apellido: str 
     telefono: str
-    
+
+class User_Update(BaseModel):
+    nombre:str
+    apellido:str
+    telefono:str
+    email:str
+    direccion:str
 class User_DB (User_Register):
     status: bool = Field(default= True)
     token: str = Field(default=None)
     confirmEmail: bool =  Field(default=False)
-    githubId: int = Field(default=0)
-    password_requiered: bool = Field(default= False)
+    # githubId: int = Field(default=0)
+    # password_requiered: bool = Field(default= False)
     
     def generate_token(self):
         new_token = string.ascii_letters + string.digits

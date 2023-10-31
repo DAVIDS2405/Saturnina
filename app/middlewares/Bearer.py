@@ -13,20 +13,25 @@ class JWTBearer(HTTPBearer):
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
         if credentials:
             if not credentials.scheme == "Bearer":
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg":"Esquema autenticacion invalido."})
-            if not self.verify_jwt(credentials.credentials):
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg":"Token invalido o expirado"})
-            return credentials.credentials
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg":"Esquema autenticación invalido."})
+            payload = await self.verify_jwt(credentials.credentials)
+            if payload[0] is False:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg": "Token inválido o expirado"})
+            if payload[1] is None:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg": "Token inválido o expirado"})
+            return credentials.credentials,payload[1]
         else:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg":"Token invalido o expirado"})
 
-    def verify_jwt(self, jwtoken: str) -> bool:
+    async def verify_jwt(self, jwtoken: str) -> bool:
         isTokenValid: bool = False
-
+        payload = None
         try:
-            payload = decodeJWT(jwtoken)
+            payload = await decodeJWT(jwtoken)
+            
         except:
             payload = None
+
         if payload:
             isTokenValid = True
-        return isTokenValid
+        return (isTokenValid,payload)

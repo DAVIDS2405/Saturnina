@@ -4,11 +4,11 @@ from models.user_model import Email_User, User_Login, User_Recover_Password, Use
 from middlewares.Bearer import JWTBearer
 
 router = APIRouter(
-    tags=["Usuario"],
+    tags=["Usuario"]
 )
 
 
-@router.post("/login",status_code=status.HTTP_200_OK, description="Inicia sesión con tu correo y contraseña")
+@router.post("/login", description="Inicia sesión con tu correo y contraseña")
 async def Iniciar_sesión_usuario(data:User_Login = Body(example={
     "email":"sebastian2405lucero@hotmail.com",
     "password":"@asdaw@qweDb"
@@ -16,7 +16,7 @@ async def Iniciar_sesión_usuario(data:User_Login = Body(example={
     response = await Login(data)
     return response
 
-@router.post("/register",status_code=status.HTTP_201_CREATED,description="Crea un usuario con los siguientes datos")
+@router.post("/register",description="Crea un usuario con los siguientes datos")
 async def Registro_usuario(data:User_Register = Body(example={
     "nombre":"David",
     "apellido":"Basantes",

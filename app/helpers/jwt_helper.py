@@ -12,7 +12,7 @@ JWT_ALGORITHM = os.getenv("ALGORITHM")
 async def Search_User(id):
     User_Db = await Connection()
     user = await User_Db.select(id)
-    data_user_keys = {"nombre", "apellido", "telefono", "direccion", "id", "email"}
+    data_user_keys = {"nombre", "apellido", "telefono", "direccion", "id", "email","is_admin"}
     data_user_filtered = {key: user[key] for key in data_user_keys if key in user}
     await User_Db.close()
     return data_user_filtered
@@ -21,7 +21,7 @@ async def Search_User(id):
 def signJWT(user_id: str) -> Dict[str, str]:
     payload = {
         "user_id": user_id,
-        "expires": time.time() + 800
+        "expires": time.time() + 1000
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 

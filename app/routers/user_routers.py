@@ -1,4 +1,4 @@
-from fastapi import APIRouter,status,Body, Depends
+from fastapi import APIRouter,Body, Depends
 from controllers.user_controller import Check_email, Check_token, Login, New_password, Recover_Password, Register, User_detail, User_detail_Update, User_profile, User_profile_actualizar_contrasenia
 from models.user_model import Email_User, User_Login, User_Recover_Password, User_Register, User_Update
 from middlewares.Bearer import JWTBearer
@@ -21,7 +21,7 @@ async def Registro_usuario(data:User_Register = Body(example={
     "nombre":"David",
     "apellido":"Basantes",
     "email":"sebastian2405lucero@hotmail.com",
-    "teléfono":"090095964",
+    "telefono":"090095964",
     "password":"@asdaw@qweDb"
     
 })):
@@ -61,7 +61,7 @@ async def User_Perfil(data: dict = Depends(JWTBearer())):
 
 
 @router.put("/update-password")
-async def Confirmar_cuenta(password:User_Recover_Password = Body(example={
+async def Actualizar_contrasenia(password:User_Recover_Password = Body(example={
     "new_password":"change123",
     "check_password":"change123"
     }),data: dict = Depends(JWTBearer())):
@@ -70,7 +70,7 @@ async def Confirmar_cuenta(password:User_Recover_Password = Body(example={
 
 
 @router.get("/user/{id}",dependencies=[Depends(JWTBearer())])
-async def Confirmar_cuenta(id:str):
+async def Datos_cuenta(id:str):
     response = await User_detail(id)
     return response
 

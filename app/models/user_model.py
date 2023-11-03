@@ -35,7 +35,6 @@ class User_DB (User_Register):
     status: bool = Field(default= True)
     token: str = Field(default=None)
     confirmEmail: bool =  Field(default=False)
-    is_admin: bool = Field(default=False)
     # githubId: int = Field(default=0)
     # password_requiered: bool = Field(default= False)
     

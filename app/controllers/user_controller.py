@@ -1,4 +1,3 @@
-import json
 from fastapi import HTTPException,status
 from config.smtp_config import smtp_config
 from database.database import Connection
@@ -50,9 +49,10 @@ async def Register(data):
     email = data.email
     User_Db = await Connection()
     Check_email = await User_Db.select("user_saturnina")
-    
+    user = None
     for user in Check_email:
          if(user["email"] == email):
+             user = user
              await User_Db.close()
              raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg":"Este email ya se encuentra en uso"})
     
@@ -65,8 +65,13 @@ async def Register(data):
     new_User = new_User.dict()
     new_User['password'] = new_User['password'].decode("utf-8")
 
-    await User_Db.create("user_saturnina",new_User,)
-        
+    id_user = await User_Db.create("user_saturnina",new_User)
+    for id_user_database in id_user:
+        if(id_user_database.get("id")):
+            id_user_database = id_user_database
+            break
+    
+    await User_Db.query('update ($id) merge {"rol":rol:vuqn7k4vw0m1a3wt7fkb};' ,{"id":id_user_database.get("id")})
     await User_Db.close()
         
     email_sender = smtp_config()
@@ -213,6 +218,10 @@ async def User_profile_actualizar_contrasenia(password,data):
     id_user = data.get('id')
     User_Db = await Connection()
     user_update_password = await User_Db.select(id_user)
+    
+    if not user_update_password:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"no se encuentra el Usuario"})
     
     if(new_password != check_new_password):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Las password no coinciden"})

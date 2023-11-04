@@ -12,7 +12,7 @@ JWT_ALGORITHM = os.getenv("ALGORITHM")
 async def Search_User(id):
     User_Db = await Connection()
     user = await User_Db.select(id)
-    data_user_keys = {"nombre", "apellido", "telefono", "direccion", "id", "email","is_admin"}
+    data_user_keys = {"nombre", "apellido", "telefono", "direccion", "id", "email","rol"}
     data_user_filtered = {key: user[key] for key in data_user_keys if key in user}
     await User_Db.close()
     return data_user_filtered

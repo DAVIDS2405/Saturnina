@@ -1,4 +1,3 @@
-from typing import Annotated
 from fastapi import APIRouter,Body, Depends, File, UploadFile
 from fastapi.params import Form
 from controllers.admin_controller import Create_category, Create_products, Delete_products, Delete_category, Get_products, List_category, Update_category, Update_products
@@ -41,12 +40,21 @@ async def Obtener_Productos():
     return response
 
 @router.post("/products",dependencies=[Depends(JWTBearer())])
-async def Crear_Producto( nombre_producto :Annotated[str, Form()],id_categoria:Annotated[str,Form()],descripcion:Annotated[str,Form()],precio:Annotated[float,Form()],imagen_producto:UploadFile = File(...)):
+async def Crear_Producto(     nombre_producto: str = Form(...),
+    id_categoria: str = Form(...),
+    descripcion: str = Form(...),
+    precio: float = Form(...),
+    imagen_producto: UploadFile = File(...)):
     response = await Create_products(nombre_producto,id_categoria,descripcion,precio,imagen_producto)
     return response
 
 @router.put("/products/{id_product}",dependencies=[Depends(JWTBearer())])
-async def Actualizar_producto(id_product:str,nombre_producto :Annotated[str, Form()],id_categoria:Annotated[str,Form()],descripcion:Annotated[str,Form()],precio:Annotated[float,Form()],imagen_producto:UploadFile = File(...)):
+async def Actualizar_producto(    id_product: str,
+    nombre_producto: str = Form(...),
+    id_categoria: str = Form(...),
+    descripcion: str = Form(...),
+    precio: float = Form(...),
+    imagen_producto: UploadFile = File(...)):
     response  = await Update_products(id_product,nombre_producto,id_categoria,descripcion,precio,imagen_producto)
     return response
     

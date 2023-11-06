@@ -1,2 +1,4 @@
 #V2
 select * from category
+select * from product
+select * from product:t075jtyapk2pjavshk4w

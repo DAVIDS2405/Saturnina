@@ -75,7 +75,7 @@ async def Datos_cuenta(id:str):
     return response
 
 @router.put("/user/{id}",dependencies=[Depends(JWTBearer())])
-async def Actaulizar_Perfil(id:str,data:User_Update = Body(example={
+async def Actualizar_Perfil(id:str,data:User_Update = Body(example={
     "nombre":"Sebastian",
     "apellido":"Lucero",
     "telefono":"0990095963",

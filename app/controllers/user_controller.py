@@ -276,9 +276,8 @@ async def User_detail_Update(id,data):
     new_email_user = data.email
     new_telefono = data.telefono
     new_apellido = data.apellido
-    new_direccion =data.direccion
     new_nombre = data.nombre
     
-    await User_Db.query('update ($id) merge {"nombre":($new_name),"apellido":($new_lastname),"direccion":($new_address),"telefono":($new_phone),"email":($new_email)};' ,{"id":user.get("id"),"new_name":new_nombre,"new_lastname":new_apellido,"new_address":new_direccion,"new_phone":new_telefono,"new_email":new_email_user})
+    await User_Db.query('update ($id) merge {"nombre":($new_name),"apellido":($new_lastname),"telefono":($new_phone),"email":($new_email)};' ,{"id":user.get("id"),"new_name":new_nombre,"new_lastname":new_apellido,"new_phone":new_telefono,"new_email":new_email_user})
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Datos actualizados correctamente"})

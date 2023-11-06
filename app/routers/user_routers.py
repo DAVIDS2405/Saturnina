@@ -79,8 +79,7 @@ async def Actualizar_Perfil(id:str,data:User_Update = Body(example={
     "nombre":"Sebastian",
     "apellido":"Lucero",
     "telefono":"0990095963",
-    "email":"sebastian2405lucero@gmail.com",
-    "direccion":"Magdalena"
+    "email":"sebastian2405lucero@gmail.com"
 })):
     response = await User_detail_Update(id,data)
     return response

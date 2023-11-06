@@ -30,7 +30,6 @@ class User_Update(BaseModel):
     apellido:str
     telefono:str
     email:str
-    direccion:str
 class User_DB (User_Register):
     status: bool = Field(default= True)
     token: str = Field(default=None)

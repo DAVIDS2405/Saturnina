@@ -361,7 +361,7 @@ async def Create_order(data, transfer_image):
             
             
     for product in data.products:
-        status_default = {"status": "status:2t6jutza9uoz43s049z1"}
+        status_default = {"status": "En revision"}
         fecha_actual = datetime.now()
         fecha_actual = str(fecha_actual)
         date_now = {"fecha":fecha_actual}

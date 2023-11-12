@@ -1,5 +1,5 @@
 from config.cloudinary_config import Upload_image,Delete_image
-from models.category_products import Category
+from  models.admin_model import Category
 from database.database import Connection
 from fastapi import HTTPException,status
 
@@ -61,11 +61,17 @@ async def Update_category(id_category,data):
 async def Delete_category(id_category):
     User_Db = await Connection()
     check_id_category = await User_Db.select("category")
+    check_products = await User_Db.select("product")
     
     for category in check_id_category:
         if category.get("id") == id_category:
             category = category
             break
+        
+    for product in check_products:
+        if(product.get("category") == id_category):
+            await User_Db.close()
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail={"msg":"Existen productos ligados a esta categoría"})
     
     if category is None:
         await User_Db.close()
@@ -93,8 +99,9 @@ async def Get_products():
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=products_list)
 
-async def Create_products(nombre_producto,id_categoria,descripcion,precio,imagen_producto):
-    
+async def Create_products(data,imagen_producto):
+    id_categoria = data.id_categoria
+    nombre_producto = data.nombre_producto
     async def is_image(file) -> bool:
         allowed_extensions = ["jpg", "jpeg", "png", "webp"]
         file_extension = file.filename.split(".")[-1].lower()
@@ -106,18 +113,17 @@ async def Create_products(nombre_producto,id_categoria,descripcion,precio,imagen
 
     User_Db = await Connection()
     products_list = await User_Db.select("product")
-    category_list = await User_Db.select("category")
+    category = await User_Db.select(id_categoria)
     
     if not await is_image(imagen_producto):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
 
-    for category in category_list:
-        if(category.get("id") != id_categoria):
-            await User_Db.close()
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta categoría no existe"})
+    if not category:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                            "msg": "Esta categoría no existe"})
+
 
     for products in products_list:
-        print(products.get("name") == nombre_producto)
         if products.get("name") == nombre_producto:
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg":"Este producto ya existe"})
@@ -126,44 +132,76 @@ async def Create_products(nombre_producto,id_categoria,descripcion,precio,imagen
     cloudinary_key = {"public_id","secure_url"}
     data_cloudinary_filtered = {key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
     
-    data_product = {"name": nombre_producto, "category":id_categoria, "descripcion":descripcion, "precio":precio, "imagen":data_cloudinary_filtered}
+    data_product = {"name": nombre_producto, "category": id_categoria,
+                    "descripcion": data.descripcion, "precio": data.precio, "imagen": data_cloudinary_filtered}
 
     await User_Db.create("product",data_product)
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=data_product)
 
-async def Update_products(id_product,nombre_producto,id_categoria,descripcion,precio,imagen_producto):
+async def Update_products(id_product,data,imagen_producto):
+    nombre_producto = data.nombre_producto
     User_Db = await Connection()
-    category_list = await User_Db.select("category")
+    category = await User_Db.select(data.id_category)
     check_product = await User_Db.select(id_product)
-    
+
+    async def is_image(file) -> bool:
+        allowed_extensions = ["jpg", "jpeg", "png", "webp"]
+        file_extension = file.filename.split(".")[-1].lower()
+
+        if file_extension in allowed_extensions:
+            return True
+
+        return False
+
+    if not await is_image(imagen_producto):
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                            "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+        
     if not check_product:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"Este producto no existe"}) 
     
-    for category in category_list:
-        if(category.get("id") != id_categoria):
+
+    if not category:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                            "msg": "Esta categoría no existe"})
+        
+    products_list = await User_Db.select("product")
+    for products in products_list:
+        if products.get("name") == nombre_producto:
             await User_Db.close()
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta categoría no existe"})
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={
+                                "msg": "Este producto ya existe"})
     
     await Delete_image(check_product.get("imagen").get("public_id"))
     upload_cloudinary = await Upload_image(imagen_producto.file)
     cloudinary_key = {"public_id","secure_url"}
     data_cloudinary_filtered = {key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
     
-    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image)};' ,{"id":id_product, "new_name_product":nombre_producto,"new_price":precio,"new_descripcion":descripcion,"new_category":id_categoria,"new_image":data_cloudinary_filtered})
+    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria,"new_image":data_cloudinary_filtered})
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu producto se ha actualizado"})
 
 async def Delete_products(id_product):
     User_Db = await Connection()
     check_product = await User_Db.select(id_product)
+    check_pedidos = await User_Db.select("order_detail")
     
     if not check_product:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"Este producto no existe"}) 
+    check = True
 
-
+    for product in check_pedidos:
+        if product.get("status") != "status:aq2etnacyaw4vgdr6ogu":
+            check = False
+            break
+        
+    if check == False:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail={"msg":"necesitas primero poner en cancelada todas los pedidos que contengan este producto"})
+    
     await Delete_image(check_product.get("imagen").get("public_id"))
     await User_Db.delete(id_product)
     await User_Db.close()

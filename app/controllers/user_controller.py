@@ -1,8 +1,10 @@
+from datetime import datetime
 from fastapi import HTTPException,status
+from config.cloudinary_config import Delete_image, Upload_image
 from config.smtp_config import smtp_config
 from database.database import Connection
 from helpers.jwt_helper import signJWT
-from models.user_model import User_DB, User_Recover_Password
+from models.user_model import User_DB, User_Recover_Password, Order
     
 async def Login(data):
     
@@ -92,7 +94,7 @@ async def Check_email(data):
             break
      
     if user is None:
-        await User_DB.close()
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta cuenta no existe"})
         
     if user.get("token") is None:
@@ -154,7 +156,7 @@ async def Check_token(data):
             break
     
     if user is None:
-        await User_DB.close()
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta cuenta no existe"})
     if user.get("token") is None:
         await User_Db.close()
@@ -183,7 +185,7 @@ async def New_password(token,data):
             break
     
     if user is None:
-        await User_DB.close()
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta cuenta no existe"})
     
     if user.get("token") is None:
@@ -254,7 +256,7 @@ async def User_detail(id):
     
     user = await User_Db.select(id)
     
-    if user is None:
+    if not user:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"no se encuentra el Usuario"})
     
@@ -268,7 +270,7 @@ async def User_detail_Update(id,data):
     User_Db = await Connection()
     user = await User_Db.select(id)
         
-    if user is None:
+    if not user:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"no se encuentra el Usuario"})
     
@@ -281,3 +283,138 @@ async def User_detail_Update(id,data):
     await User_Db.query('update ($id) merge {"nombre":($new_name),"apellido":($new_lastname),"telefono":($new_phone),"email":($new_email)};' ,{"id":user.get("id"),"new_name":new_nombre,"new_lastname":new_apellido,"new_phone":new_telefono,"new_email":new_email_user})
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Datos actualizados correctamente"})
+
+
+async def View_order(id_user):
+    User_Db= await Connection()
+    
+    all_orders = await User_Db.query("select *, id_producto.*,id_orden.* from order_detail where id_orden.user_id = ($id_user) fetch product, order;", {"id_user": id_user})
+    
+
+    if not all_orders[0]['result'] :
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"No tienes ningún pedido"})
+    
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_302_FOUND,detail=all_orders)
+
+async def Create_order(data, transfer_image):
+    User_Db = await Connection()
+    found = False
+
+    async def is_image(file) -> bool:
+        allowed_extensions = ["jpg", "jpeg", "png", "webp"]
+        file_extension = file.filename.split(".")[-1].lower()
+
+        if file_extension in allowed_extensions:
+            return True
+
+        return False
+
+    if not await is_image(transfer_image):
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                            "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+        
+    db_products = await User_Db.select("product")
+    for value in data.products: 
+        found = False
+        for check_product in db_products:
+            if check_product.get("id") == value:
+                found = True
+                break
+        if not found:
+            found = False
+            break
+        else:
+            found = True
+    
+    if not found:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg":"El id de alguno de los productos esta mal intenta de nuevo"})
+    
+    db_user = await User_Db.select(data.user_id)
+    if not db_user:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg":"Este usuario no existe"})
+    
+    order_list = dict(data)
+    data_order_keys = {"nombre", "apellido",
+                       "telefono", "direccion", "user_id", "email", "price_order", "descripcion"}
+    
+    data_order_filtered = {key: order_list[key]
+                           for key in data_order_keys if key in order_list}
+    
+    upload_cloudinary = await Upload_image(transfer_image.file)
+    cloudinary_key = {"public_id","secure_url"}
+    data_cloudinary_filtered = {key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
+    
+    cloudinary_image = {"image_transaccion": data_cloudinary_filtered}
+    data_order_filtered.update(cloudinary_image)
+
+    id_order = await User_Db.create("order", data_order_filtered)
+    for id_order_db in id_order:
+        if (id_order_db.get("id")):
+            id_order_db = id_order_db
+            
+    for products in data.products:
+        detail_order = {products}
+        detail_order.add(id_order_db.get("id"))
+        fecha_actual = datetime.now()
+        fecha_actual = str(fecha_actual)
+        detail_order.add(fecha_actual)
+        data_order_keys = {"id_orden", "id_producto", "fecha"}
+        status_default = {"status": "status:2t6jutza9uoz43s049z1"}
+        data_order_detail = sorted(list(detail_order))
+        
+        data_order_dict = {key: value for key, value in zip(
+            data_order_keys, data_order_detail)}
+        data_order_dict.update(status_default)
+        await User_Db.create("order_detail",data_order_dict)
+        
+        
+    
+    fecha_actual = datetime.now()
+    fecha_actual = str(fecha_actual)
+    await User_Db.query('update ($id) merge {"order_date": ($now_date)};', {"id": id_order_db.get("id"), "now_date": fecha_actual})
+    
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_201_CREATED,detail={"msg":"Pedido realizado"})
+
+
+async def Update_order(id_order,data,transfer_image):
+    User_Db = await Connection()
+    
+    async def is_image(file) -> bool:
+        allowed_extensions = ["jpg", "jpeg", "png", "webp"]
+        file_extension = file.filename.split(".")[-1].lower()
+
+        if file_extension in allowed_extensions:
+            return True
+
+        return False
+
+    if not await is_image(transfer_image):
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                            "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+        
+
+    
+    check_order = await User_Db.select(id_order)
+    
+    if not check_order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"el id de la orden es incorrecto"})
+    
+    await Delete_image(check_order.get("image_transaccion").get("public_id"))
+    upload_cloudinary = await Upload_image(transfer_image.file)
+    cloudinary_key = {"public_id", "secure_url"}
+    data_cloudinary_filtered = {
+        key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
+    
+    fecha_actual = datetime.now()
+    fecha_actual = str(fecha_actual)
+    
+    await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"image_transaccion":($new_image),"order_date":($new_date),"email":($new_email)};', {"id":check_order.get("id"),"new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email":data.email, "new_image": data_cloudinary_filtered,"new_date":fecha_actual})
+    
+
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu pedido fue actualizado"})

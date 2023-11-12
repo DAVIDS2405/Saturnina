@@ -1,6 +1,6 @@
-from fastapi import APIRouter,Body, Depends
-from controllers.user_controller import Check_email, Check_token, Login, New_password, Recover_Password, Register, User_detail, User_detail_Update, User_profile, User_profile_actualizar_contrasenia
-from models.user_model import Email_User, User_Login, User_Recover_Password, User_Register, User_Update
+from fastapi import APIRouter,Body, Depends, UploadFile, File
+from controllers.user_controller import Check_email, Check_token, Create_order, Login, New_password, Recover_Password, Register, Update_order, User_detail, User_detail_Update, User_profile, User_profile_actualizar_contrasenia, View_order
+from models.user_model import Email_User, Order, Order_update, User_Login, User_Recover_Password, User_Register, User_Update
 from middlewares.Bearer import JWTBearer
 
 router = APIRouter(
@@ -74,7 +74,8 @@ async def Datos_cuenta(id:str):
     response = await User_detail(id)
     return response
 
-@router.put("/user/{id}",dependencies=[Depends(JWTBearer())])
+
+@router.put("/user/{id}", dependencies=[Depends(JWTBearer())], responses={200: {"content": {"application/json": {"example":"Éxito"}}}})
 async def Actualizar_Perfil(id:str,data:User_Update = Body(example={
     "nombre":"Sebastian",
     "apellido":"Lucero",
@@ -83,4 +84,23 @@ async def Actualizar_Perfil(id:str,data:User_Update = Body(example={
 })):
     response = await User_detail_Update(id,data)
     return response
+
+
+@router.get("/order/{id_user}", dependencies=[Depends(JWTBearer())])
+async def Buscar_pedido(id_user:str):
+    response = await View_order(id_user)
+    return response
+
+
+@router.post("/order", dependencies=[Depends(JWTBearer())])
+async def Crear_pedido(data: Order = Body(), transfer_image: UploadFile = File()):
+    response = await Create_order(data,transfer_image)
+    return response
+
+
+@router.put("/order/{id_order}", dependencies=[Depends(JWTBearer())])
+async def Actualizar_orden(id_order:str,data: Order_update = Body(), transfer_image: UploadFile = File()):
+    response = await Update_order(id_order,data,transfer_image)
+    return response
+
 

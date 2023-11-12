@@ -199,3 +199,4 @@ body {{
 
         smtp.sendmail(self.smtp_user, user_mail, mensaje.as_string())
         smtp.quit()
+        

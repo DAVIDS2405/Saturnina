@@ -1,3 +1,4 @@
+import json
 import secrets
 import string
 import bcrypt
@@ -50,8 +51,45 @@ class User_DB (User_Register):
     def verify_password(plain_password,password_bd: str) -> bool:
         return bcrypt.checkpw(plain_password.get_secret_value().encode(),password_bd.encode('utf-8'))
     
-   
+
+class Order(BaseModel):
+    user_id: str = Field(examples=["user_saturnina:mnr0nnm2kbrjrxor19p4"])
+    price_order: float = Field(gt=0)
+    products: list[str] = Field(
+        examples=[{"product:1318xx8s1f75mtln2iqx", "product:m0brauwpzn22nlsh77f7"}])
+    nombre: str = Field(examples=["David"])
+    apellido: str = Field(examples=["Basantes"])
+    direccion: str = Field(examples=["La magdalena"])
+    email: str = Field(examples=["sebastian2405lucero@hotmail.com"])
+    telefono: str = Field(examples=["090095964"])
+    descripcion: str = Field(examples=["Me gustaria que fuera de color rojo y el bordado con una letra D"])
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate_to_json
+
+    @classmethod
+    def validate_to_json(cls, value):
+        if isinstance(value, str):
+            return cls(**json.loads(value))
+        return value
     
+class Order_update(BaseModel):
+    nombre: str = Field(examples=["David"])
+    apellido: str = Field(examples=["Basantes"])
+    direccion: str = Field(examples=["La magdalena"])
+    email: str = Field(examples=["sebastian2405lucero@hotmail.com"])
+    telefono: str = Field(examples=["090095964"])
+    
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate_to_json
+
+    @classmethod
+    def validate_to_json(cls, value):
+        if isinstance(value, str):
+            return cls(**json.loads(value))
+        return value   
 
 
     

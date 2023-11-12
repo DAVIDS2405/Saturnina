@@ -1,7 +1,6 @@
 from fastapi import APIRouter,Body, Depends, File, UploadFile
-from fastapi.params import Form
 from controllers.admin_controller import Create_category, Create_products, Delete_products, Delete_category, Get_products, List_category, Update_category, Update_products
-from models.category_products import Category
+from models.admin_model import Category, Products
 from middlewares.Bearer import JWTBearer
 
 
@@ -11,7 +10,7 @@ router = APIRouter(
 
 
 
-@router.get("/category",dependencies=[Depends(JWTBearer())])
+@router.get("/category")
 async def Listar_categorias():
     response = await List_category()
     return response
@@ -34,28 +33,21 @@ async def Elimar_categoria(id_category:str):
     response = await Delete_category(id_category)
     return response
 
-@router.get("/products",dependencies=[Depends(JWTBearer())])
+@router.get("/products")
 async def Obtener_Productos():
     response = await Get_products()
     return response
 
-@router.post("/products",dependencies=[Depends(JWTBearer())])
-async def Crear_Producto(     nombre_producto: str = Form(...),
-    id_categoria: str = Form(...),
-    descripcion: str = Form(...),
-    precio: float = Form(...),
-    imagen_producto: UploadFile = File(...)):
-    response = await Create_products(nombre_producto,id_categoria,descripcion,precio,imagen_producto)
+
+@router.post("/products", dependencies=[Depends(JWTBearer())])
+async def Crear_Producto( data:Products = Body(),
+    imagen_producto: UploadFile = File()):
+    response = await Create_products(data,imagen_producto)
     return response
 
 @router.put("/products/{id_product}",dependencies=[Depends(JWTBearer())])
-async def Actualizar_producto(    id_product: str,
-    nombre_producto: str = Form(...),
-    id_categoria: str = Form(...),
-    descripcion: str = Form(...),
-    precio: float = Form(...),
-    imagen_producto: UploadFile = File(...)):
-    response  = await Update_products(id_product,nombre_producto,id_categoria,descripcion,precio,imagen_producto)
+async def Actualizar_producto(id_product:str,data:Products = Body(...),imagen_producto: UploadFile = File(...)):
+    response  = await Update_products(id_product,data,imagen_producto)
     return response
     
 @router.delete("/products/{id_product}",dependencies=[Depends(JWTBearer())])

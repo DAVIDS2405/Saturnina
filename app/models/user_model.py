@@ -55,7 +55,7 @@ class User_DB (User_Register):
 class Order(BaseModel):
     user_id: str = Field(examples=["user_saturnina:mnr0nnm2kbrjrxor19p4"])
     price_order: float = Field(gt=0)
-    products: list[str] = Field(
+    products: list = Field(
         examples=[{"product:1318xx8s1f75mtln2iqx", "product:m0brauwpzn22nlsh77f7"}])
     nombre: str = Field(examples=["David"])
     apellido: str = Field(examples=["Basantes"])

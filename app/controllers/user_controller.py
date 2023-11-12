@@ -299,9 +299,10 @@ async def View_order(id_user):
     raise HTTPException(status_code=status.HTTP_302_FOUND,detail=all_orders)
 
 async def Create_order(data, transfer_image):
+    
     User_Db = await Connection()
     found = False
-
+    
     async def is_image(file) -> bool:
         allowed_extensions = ["jpg", "jpeg", "png", "webp"]
         file_extension = file.filename.split(".")[-1].lower()
@@ -319,7 +320,7 @@ async def Create_order(data, transfer_image):
     for value in data.products: 
         found = False
         for check_product in db_products:
-            if check_product.get("id") == value:
+            if check_product.get("id") == value.id_producto:
                 found = True
                 break
         if not found:
@@ -327,6 +328,8 @@ async def Create_order(data, transfer_image):
             break
         else:
             found = True
+            
+   
     
     if not found:
         await User_Db.close()
@@ -356,23 +359,19 @@ async def Create_order(data, transfer_image):
         if (id_order_db.get("id")):
             id_order_db = id_order_db
             
-    for products in data.products:
-        detail_order = {products}
-        detail_order.add(id_order_db.get("id"))
+            
+    for product in data.products:
+        status_default = {"status": "status:2t6jutza9uoz43s049z1"}
         fecha_actual = datetime.now()
         fecha_actual = str(fecha_actual)
-        detail_order.add(fecha_actual)
-        data_order_keys = {"id_orden", "id_producto", "fecha"}
-        status_default = {"status": "status:2t6jutza9uoz43s049z1"}
-        data_order_detail = sorted(list(detail_order))
-        
-        data_order_dict = {key: value for key, value in zip(
-            data_order_keys, data_order_detail)}
-        data_order_dict.update(status_default)
-        await User_Db.create("order_detail",data_order_dict)
-        
-        
-    
+        date_now = {"fecha":fecha_actual}
+        id_order_key = {"id_orden": id_order_db.get("id")}
+        product = dict(product)
+        product.update(id_order_key)
+        product.update(date_now)
+        product.update(status_default)
+        await User_Db.create("order_detail",product)
+           
     fecha_actual = datetime.now()
     fecha_actual = str(fecha_actual)
     await User_Db.query('update ($id) merge {"order_date": ($now_date)};', {"id": id_order_db.get("id"), "now_date": fecha_actual})

@@ -1,7 +1,9 @@
 import json
 import secrets
 import string
+from typing import List
 import bcrypt
+from fastapi import Body
 from pydantic import BaseModel, EmailStr, Field, SecretStr
 
 class Email_User(BaseModel):
@@ -51,12 +53,15 @@ class User_DB (User_Register):
     def verify_password(plain_password,password_bd: str) -> bool:
         return bcrypt.checkpw(plain_password.get_secret_value().encode(),password_bd.encode('utf-8'))
     
+class Data_product_order(BaseModel):
+    id_producto: str 
+    cantidad: int
+    
 
 class Order(BaseModel):
     user_id: str = Field(examples=["user_saturnina:mnr0nnm2kbrjrxor19p4"])
     price_order: float = Field(gt=0)
-    products: list = Field(
-        examples=[{"product:1318xx8s1f75mtln2iqx", "product:m0brauwpzn22nlsh77f7"}])
+    products: List[Data_product_order] = [{"id_producto":"ni idea","cantidad":1},{"id_producto":"123213","cantidad":3}]
     nombre: str = Field(examples=["David"])
     apellido: str = Field(examples=["Basantes"])
     direccion: str = Field(examples=["La magdalena"])
@@ -73,6 +78,7 @@ class Order(BaseModel):
         if isinstance(value, str):
             return cls(**json.loads(value))
         return value
+    
     
 class Order_update(BaseModel):
     nombre: str = Field(examples=["David"])

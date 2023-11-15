@@ -99,6 +99,20 @@ async def Get_products():
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=products_list)
 
+
+async def Get_one_products(id_product):
+    User_Db = await Connection()
+    products_list = await User_Db.select(id_product)
+
+    if not products_list:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                            "msg": "No existe este producto"})
+
+    await User_Db.close()
+    raise HTTPException(
+        status_code=status.HTTP_202_ACCEPTED, detail=products_list)
+
 async def Create_products(data,imagen_producto):
     id_categoria = data.id_categoria
     nombre_producto = data.nombre_producto

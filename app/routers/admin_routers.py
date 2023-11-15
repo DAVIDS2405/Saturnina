@@ -1,5 +1,5 @@
 from fastapi import APIRouter,Body, Depends, File, UploadFile
-from controllers.admin_controller import Create_category, Create_products, Delete_products, Delete_category, Get_products, List_category, Update_category, Update_products
+from controllers.admin_controller import Create_category, Create_products, Delete_products, Delete_category, Get_one_products, Get_products, List_category, Update_category, Update_products
 from models.admin_model import Category, Products
 from middlewares.Bearer import JWTBearer
 
@@ -36,6 +36,12 @@ async def Elimar_categoria(id_category:str):
 @router.get("/products")
 async def Obtener_Productos():
     response = await Get_products()
+    return response
+
+
+@router.get("/products/{id_products}")
+async def Obtener_Productos(id_products : str):
+    response = await Get_one_products(id_products)
     return response
 
 

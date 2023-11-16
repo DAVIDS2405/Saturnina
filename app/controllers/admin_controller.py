@@ -154,9 +154,8 @@ async def Create_products(data,imagen_producto):
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=data_product)
 
 async def Update_products(id_product,data,imagen_producto):
-    nombre_producto = data.nombre_producto
     User_Db = await Connection()
-    category = await User_Db.select(data.id_category)
+    category = await User_Db.select(data.id_categoria)
     check_product = await User_Db.select(id_product)
 
     async def is_image(file) -> bool:
@@ -181,13 +180,6 @@ async def Update_products(id_product,data,imagen_producto):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
                             "msg": "Esta categoría no existe"})
         
-    products_list = await User_Db.select("product")
-    for products in products_list:
-        if products.get("name") == nombre_producto:
-            await User_Db.close()
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={
-                                "msg": "Este producto ya existe"})
-    
     await Delete_image(check_product.get("imagen").get("public_id"))
     upload_cloudinary = await Upload_image(imagen_producto.file)
     cloudinary_key = {"public_id","secure_url"}

@@ -200,7 +200,7 @@ async def Delete_products(id_product):
     check = True
 
     for product in check_pedidos:
-        if product.get("status") != "status:aq2etnacyaw4vgdr6ogu" and product.get("id_producto") == id_product:
+        if product.get("status") != "Cancelado" and product.get("id_producto") == id_product:
             check = False
             break
         

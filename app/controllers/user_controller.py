@@ -33,9 +33,9 @@ async def Login(data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Necesitas activar tu cuenta revisa tu correo para confirmar"})
     
-    data_user_keys = {"nombre", "apellido", "telefono", "dirrecion", "id", "email", "token"}
+    data_user_keys = {"nombre", "apellido", "telefono", "dirrecion", "id", "email", "token","rol"}
     data_user_filtered = {key: user[key] for key in data_user_keys if key in user}
-    data_user_filtered['token'] = signJWT(data_user_filtered['id']) 
+    data_user_filtered['token'] = signJWT(data_user_filtered['id'],data_user_filtered['rol']) 
     
     check_password = User_DB.verify_password(plain_password=password,password_bd=user.get("password"))
     

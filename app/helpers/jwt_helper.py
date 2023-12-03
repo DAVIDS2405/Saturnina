@@ -18,9 +18,10 @@ async def Search_User(id):
     return data_user_filtered
 
 # function used for signing the JWT string
-def signJWT(user_id: str) -> Dict[str, str]:
+def signJWT(user_id: str,user_rol:str) -> Dict[str, str]:
     payload = {
         "user_id": user_id,
+        "rol":user_rol,
         "expires": time.time() + 1800
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)

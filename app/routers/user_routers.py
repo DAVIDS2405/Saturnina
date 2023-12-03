@@ -1,4 +1,5 @@
-from fastapi import APIRouter,Body, Depends, UploadFile, File
+from fastapi import APIRouter,Body, Depends, Request, UploadFile, File
+from middlewares.check_admin_user_JWT import Check_rol_user
 from controllers.user_controller import Check_email, Check_token, Create_order, Login, New_password, Recover_Password, Register, Update_order, User_detail, User_detail_Update, User_profile, User_profile_actualizar_contrasenia, View_order
 from models.user_model import Email_User, Order, Order_update, User_Login, User_Recover_Password, User_Register, User_Update
 from middlewares.Bearer import JWTBearer
@@ -55,7 +56,9 @@ async def Nueva_Contrasenia(token:str,password:User_Recover_Password = Body(exam
     return response
 
 @router.get("/profile")
-async def User_Perfil(data: dict = Depends(JWTBearer())):
+async def User_Perfil(token: Request, data: dict = Depends(JWTBearer())):
+    token = token.headers.get("authorization").split()
+    await Check_rol_user(token[1])
     response = await User_profile(data[1])
     return response
 
@@ -75,13 +78,15 @@ async def Datos_cuenta(id:str):
     return response
 
 
-@router.put("/user/{id}", dependencies=[Depends(JWTBearer())], responses={200: {"content": {"application/json": {"example":"Éxito"}}}})
-async def Actualizar_Perfil(id:str,data:User_Update = Body(example={
+@router.put("/user/{id}", dependencies=[Depends(JWTBearer())], responses={200: {"content": {"application/json": {"example":"Éxito"}}}},)
+async def Actualizar_Perfil(id:str,token:Request,data:User_Update = Body(example={
     "nombre":"Sebastian",
     "apellido":"Lucero",
     "telefono":"0990095963",
     "email":"sebastian2405lucero@gmail.com"
 })):
+    token = token.headers.get("authorization").split()
+    await Check_rol_user(token[1])
     response = await User_detail_Update(id,data)
     return response
 

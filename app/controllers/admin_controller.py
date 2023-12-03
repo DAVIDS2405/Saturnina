@@ -30,8 +30,8 @@ async def Create_category(data):
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta categoría ya existe"})
             
-    new_category = Category(**data.dict())
-    await User_Db.create("category",new_category)
+    
+    await User_Db.create("category",category_name)
     await User_Db.close()
     
     raise HTTPException(status_code=status.HTTP_201_CREATED,detail={"msg":"Categoría creada con éxito"})
@@ -192,6 +192,7 @@ async def Update_products(id_product,data,imagen_producto):
 async def Delete_products(id_product):
     User_Db = await Connection()
     check_product = await User_Db.select(id_product)
+    check_category = await User_Db.select("category")
     check_pedidos = await User_Db.select("order_detail")
     
     if not check_product:

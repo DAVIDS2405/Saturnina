@@ -480,8 +480,9 @@ async def Get_comments_user(id_user):
         if (comment.get("user_saturnina") == id_user):
             comment = comment
             break
-            
-    print (comment)
+    if comment is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No has realizado comentarios"})
  
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)

@@ -31,8 +31,6 @@ async def Create_category(data):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta categoría ya existe"})
             
     new_category = Category(**data.dict())
-    print(new_category)
-    print(type(new_category))
     await User_Db.create("category",new_category)
     await User_Db.close()
     

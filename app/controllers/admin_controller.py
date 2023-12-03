@@ -32,6 +32,7 @@ async def Create_category(data):
             
     new_category = Category(**data.dict())
     print(new_category)
+    print(type(new_category))
     await User_Db.create("category",new_category)
     await User_Db.close()
     

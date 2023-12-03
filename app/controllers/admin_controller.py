@@ -42,16 +42,17 @@ async def Update_category(id_category,data):
     check_category = await User_Db.select(id_category)
     all_categorys = await User_Db.select("category")
     
-    for category in check_category:
-        if(category.get("name") == category_name):
-            await User_Db.close()
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Necesitas darle un nombre diferente"})
+
+
+    if(check_category.get("name") == category_name):
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"No puede ser igual al nombre que ya posee"})
 
     for all_category in all_categorys:
         if (all_category.get("name") == category_name):
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
-                                "msg": "Necesitas darle un nombre diferente"})
+                                "msg": "Este nombre de categoría ya existe en otra categoría"})
     if not check_category:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"No existe esta categoría"})
         
@@ -62,26 +63,20 @@ async def Update_category(id_category,data):
 
 async def Delete_category(id_category):
     User_Db = await Connection()
-    check_id_category = await User_Db.select("category")
+    check_id_category = await User_Db.select(id_category)
     check_products = await User_Db.select("product")
     
-    for category in check_id_category:
-        if category.get("id") == id_category:
-            category = category
-            break
+
         
     for product in check_products:
         if(product.get("category") == id_category):
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail={"msg":"Existen productos ligados a esta categoría"})
     
-    if category is None:
+    if not check_id_category:
         await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"No hay ninguna categoría"})
-    
-    if category.get("id") != id_category:
-        await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"Esta categoría no existe"})        
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"No existe esta categoría"})
+     
 
     
     await User_Db.delete(id_category)

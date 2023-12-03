@@ -39,19 +39,17 @@ async def Create_category(data):
 async def Update_category(id_category,data):
     category_name = data.name
     User_Db = await Connection()
-    check_category = await User_Db.select("category")
+    check_category = await User_Db.select(id_category)
     
     
     for category in check_category:
         if(category.get("name") == category_name):
             await User_Db.close()
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Esta categoría ya existe"})
-        if(category.get("id")!=id_category):
-            await User_Db.close()
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"Esta categoría no existe"})
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"Necesitas darle un nombre diferente"})
+
         
     if not check_category:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"No existe ninguna categoría"})
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"No existe esta categoría"})
         
         
     await User_Db.query('update ($id) merge {"name":($new_name_category)};' ,{"id":id_category, "new_name_category":category_name})

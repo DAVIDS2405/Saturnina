@@ -1,5 +1,5 @@
 from config.cloudinary_config import Upload_image,Delete_image
-from  models.admin_model import Category
+from  models.admin_model import Category, Order_update_status
 from database.database import Connection
 from fastapi import HTTPException,status
 
@@ -192,7 +192,6 @@ async def Update_products(id_product,data,imagen_producto):
 async def Delete_products(id_product):
     User_Db = await Connection()
     check_product = await User_Db.select(id_product)
-    check_category = await User_Db.select("category")
     check_pedidos = await User_Db.select("order_detail")
     
     if not check_product:
@@ -214,11 +213,47 @@ async def Delete_products(id_product):
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu producto se ha eliminado"})
 
+async def Get_all_orders():
+    User_Db = await Connection()
+
+    all_orders = await User_Db.query("select *, id_producto.*,id_orden.* from order_detail fetch product, order;")
+
+    if not all_orders[0]['result']:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                            "msg": "No tienes ningún pedido"})
+
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_302_FOUND, detail=all_orders)
+    
+async def Update_order_status(id_orden_detail,data):
+    UserDb = await Connection()
+    check_id_orden_detail = await UserDb.select(id_orden_detail)
+    
+    if not check_id_orden_detail:
+        await UserDb.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"No existe este detalle de orden"})
+    
+    await UserDb.query('update ($id) merge {"status":($new_status)};', {"id": id_orden_detail, "new_status": data.status_order})
+    await UserDb.close()
+    raise HTTPException(status_code=status.HTTP_200_OK, detail={
+                        "msg": "EL estado se actualizo con exito"})
+    
+async def Get_comments():
+    User_Db = await Connection()
+    all_coments = await User_Db.select("comments")
+    
+    if not all_coments:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"No existe ninguna categoria"})
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=all_coments)
+
+async def Delete_comments(id_coment):
+    User_Db = await Connection()
     
 
 
-    
-    
     
     
 

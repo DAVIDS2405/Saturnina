@@ -60,7 +60,7 @@ class Data_product_order(BaseModel):
 
 class Order(BaseModel):
     user_id: str = Field(examples=["user_saturnina:mnr0nnm2kbrjrxor19p4"])
-    price_order: float = Field(gt=0)
+    price_order: float = Field(gt=0,examples=[12.50])
     products: List[Data_product_order] = [{"id_producto":"product:yzr5f0ydfwwwp9luwj0i","cantidad":1},{"id_producto":"product:yzr5f0ydfwwwp9luwj0i","cantidad":3}]
     nombre: str = Field(examples=["David"])
     apellido: str = Field(examples=["Basantes"])
@@ -98,4 +98,8 @@ class Order_update(BaseModel):
         return value   
 
 
-    
+class Comment_product(BaseModel):
+    descripcion: str
+    id_producto: str
+    calificacion: int = Field(gt=0, le=5) 
+    user_id :str

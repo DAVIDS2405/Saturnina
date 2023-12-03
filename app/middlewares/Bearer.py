@@ -15,11 +15,10 @@ class JWTBearer(HTTPBearer):
             if not credentials.scheme == "Bearer":
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg":"Esquema autenticación invalido."})
             payload = await self.verify_jwt(credentials.credentials)
-            if payload[0] is False:
+            if payload is False:
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg": "Token inválido o expirado"})
-            if payload[1] is None:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg": "Token inválido o expirado"})
-            return credentials.credentials,payload[1]
+           
+            return credentials.credentials
         else:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"msg":"Token invalido o expirado"})
 
@@ -34,4 +33,4 @@ class JWTBearer(HTTPBearer):
 
         if payload:
             isTokenValid = True
-        return (isTokenValid,payload)
+        return (isTokenValid)

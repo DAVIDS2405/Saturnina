@@ -3,8 +3,8 @@ from fastapi import HTTPException,status
 from config.cloudinary_config import Delete_image, Upload_image
 from config.smtp_config import smtp_config
 from database.database import Connection
-from helpers.jwt_helper import signJWT
-from models.user_model import User_DB, User_Recover_Password, Order
+from helpers.jwt_helper import decodeJWT, signJWT
+from models.user_model import Comment_product, User_DB, User_Recover_Password, Order
     
 async def Login(data):
     
@@ -33,9 +33,9 @@ async def Login(data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Necesitas activar tu cuenta revisa tu correo para confirmar"})
     
-    data_user_keys = {"nombre", "apellido", "telefono", "dirrecion", "id", "email", "token","rol"}
+    data_user_keys = {"nombre", "apellido", "telefono", "dirrecion", "id", "email", "token"}
     data_user_filtered = {key: user[key] for key in data_user_keys if key in user}
-    data_user_filtered['token'] = signJWT(data_user_filtered['id'],data_user_filtered['rol']) 
+    data_user_filtered['token'] = signJWT(data_user_filtered['id'],user.get("rol")) 
     
     check_password = User_DB.verify_password(plain_password=password,password_bd=user.get("password"))
     
@@ -210,8 +210,17 @@ async def New_password(token,data):
 
 
 async def User_profile(data):
-    data = data[1]
-    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=data)
+    UserDb = await Connection()
+    decode_token = await decodeJWT(data)
+    check_user_db = await UserDb.select(decode_token.get("user_id"))
+
+    if not check_user_db:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={
+                            "msg": "El usuario no existe"})
+    
+    data_user_keys = {"nombre", "apellido", "telefono", "email"}
+    data_user_filtered = {key: check_user_db[key] for key in data_user_keys if key in check_user_db}
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=data_user_filtered)
 
 async def User_profile_actualizar_contrasenia(password,data):
     data = data[1]
@@ -417,3 +426,62 @@ async def Update_order(id_order,data,transfer_image):
 
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu pedido fue actualizado"})
+
+async def Create_comments(data):
+    User_Db = await Connection()
+    comment = None
+    comments_product = await User_Db.select("comments")
+    check_user = await User_Db.select(data.user_id)
+    check_product =await User_Db.select(data.id_producto)
+    
+    if not check_user:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No se encuentra el Usuario"})
+    if not check_product:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No se encuentra el producto"})
+    for comment in comments_product:
+        if (comment.get("user_saturnina") == data.user_id):
+            comment = comment
+            break
+    
+    if comment.get("id_producto") == data.id_producto:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No puedes realizar mas comentarios de este producto"})
+    
+    new_comment = Comment_product(**data.dict())
+    await User_Db.create("comments",new_comment)
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_201_CREATED,detail={"msg":"Tu comentario se ha creado"}) 
+
+async def Get_comments():
+    User_Db = await Connection()
+    
+    comments = await User_Db.select("comments")
+    
+    if not comments:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No hay comentarios"})
+        
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)
+
+
+async def Get_comments_user(id_user):
+    User_Db = await Connection()
+    comment = None
+    comments = await User_Db.select("comments")
+
+    if not comments:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No hay comentarios"})
+    for comment in comments:
+        if (comment.get("user_saturnina") == id_user):
+            comment = comment
+            break
+            
+    print (comment)
+ 
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)

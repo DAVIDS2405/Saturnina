@@ -25,3 +25,5 @@ class Products(BaseModel):
         return value
     
 
+class Order_update_status(BaseModel):
+    status_order: str

@@ -476,13 +476,12 @@ async def Get_comments_user(id_user):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No hay comentarios"})
-    for comment in comments:
-        if (comment.get("user_saturnina") == id_user):
-            comment = comment
-            break
-    if comment is None:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
-                            "msg": "No has realizado comentarios"})
+    
+    if comment is not None:
+        for comment in comments:
+            if (comment.get("user_saturnina") == id_user):
+                comment = comment
+                break
  
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)

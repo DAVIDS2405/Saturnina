@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Body, Depends, File, Request, UploadFile
 from middlewares.check_admin_user_JWT import Check_rol_admin
-from controllers.admin_controller import Create_category, Create_products, Delete_products, Delete_category, Get_all_orders, Get_one_products, Get_products, List_category, Update_category, Update_order_status, Update_products
+from controllers.admin_controller import Create_category, Create_products, Delete_comments, Delete_products, Delete_category, Get_all_orders, Get_one_products, Get_products, List_category, Update_category, Update_order_status, Update_products
 from models.admin_model import Category,  Order_update_status, Products
 from middlewares.Bearer import JWTBearer
 
@@ -92,3 +92,10 @@ async def Actualizar_orden_status(id_order_detail: str, token: Request, data: Or
     return response
 
 
+
+@router.delete("/comments/{id_comment}",dependencies=[Depends(JWTBearer())])
+async def Eliminar_comentario(token: Request,id_comment:str):
+    token = token.headers.get("authorization").split()
+    await Check_rol_admin(token[1])
+    response = await Delete_comments(id_comment)
+    return response

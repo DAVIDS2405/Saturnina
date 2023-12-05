@@ -203,7 +203,7 @@ async def Delete_products(id_product):
         
     if check == False:
         await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail={"msg":"necesitas primero poner en cancelada todas los pedidos que contengan este producto"})
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail={"msg":"necesitas primero poner en 'Cancelado' todas los pedidos que contengan este producto"})
     
     await Delete_image(check_product.get("imagen").get("public_id"))
     await User_Db.delete(id_product)
@@ -234,20 +234,25 @@ async def Update_order_status(id_orden_detail,data):
     await UserDb.query('update ($id) merge {"status":($new_status)};', {"id": id_orden_detail, "new_status": data.status_order})
     await UserDb.close()
     raise HTTPException(status_code=status.HTTP_200_OK, detail={
-                        "msg": "EL estado se actualizo con exito"})
-    
-async def Get_comments():
-    User_Db = await Connection()
-    all_coments = await User_Db.select("comments")
-    
-    if not all_coments:
-        await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"No existe ninguna categoria"})
-    await User_Db.close()
-    raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=all_coments)
+                        "msg": "EL estado se actualizo con éxito"})
+
 
 async def Delete_comments(id_coment):
     User_Db = await Connection()
+    
+    check_comment = await User_Db.select(id_coment)
+    print(check_comment)
+    if not check_comment:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"Este comentario no existe"})
+    
+    await User_Db.delete(check_comment.get("id"))
+    await User_Db.close()
+    raise HTTPException(
+        status_code=status.HTTP_202_ACCEPTED, detail={"msg":"Este comentario se ha eliminado"})
+    
+    
+    
     
 
 

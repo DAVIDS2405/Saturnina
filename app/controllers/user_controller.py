@@ -410,6 +410,7 @@ async def Update_order(id_order,data,transfer_image):
     check_order = await User_Db.select(id_order)
     
     if not check_order:
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"el id de la orden es incorrecto"})
     
     await Delete_image(check_order.get("image_transaccion").get("public_id"))
@@ -427,32 +428,38 @@ async def Update_order(id_order,data,transfer_image):
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu pedido fue actualizado"})
 
+
 async def Create_comments(data):
     User_Db = await Connection()
-    comment = None
     comments_product = await User_Db.select("comments")
     check_user = await User_Db.select(data.user_id)
-    check_product =await User_Db.select(data.id_producto)
-    
+    check_product = await User_Db.select(data.id_producto)
+
     if not check_user:
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No se encuentra el Usuario"})
     if not check_product:
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No se encuentra el producto"})
-    for comment in comments_product:
-        if (comment.get("user_saturnina") == data.user_id):
-            comment = comment
-            break
+
     
-    if comment.get("id_producto") == data.id_producto:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+    if comments_product is not None:
+        for comment in comments_product:
+            if (comment.get("user_id") == data.user_id):
+                if(comment.get("id_producto") == data.id_producto):
+                    await User_Db.close()
+                    raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No puedes realizar mas comentarios de este producto"})
-    
+            
+        
     new_comment = Comment_product(**data.dict())
-    await User_Db.create("comments",new_comment)
+    await User_Db.create("comments", new_comment)
     await User_Db.close()
-    raise HTTPException(status_code=status.HTTP_201_CREATED,detail={"msg":"Tu comentario se ha creado"}) 
+    raise HTTPException(status_code=status.HTTP_201_CREATED, detail={
+                        "msg": "Tu comentario se ha creado"})
+
 
 async def Get_comments():
     User_Db = await Connection()
@@ -460,6 +467,7 @@ async def Get_comments():
     comments = await User_Db.select("comments")
     
     if not comments:
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No hay comentarios"})
         
@@ -477,9 +485,9 @@ async def Get_comments_user(id_user):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No hay comentarios"})
     
-    if comment is not None:
+    if not comments:
         for comment in comments:
-            if (comment.get("user_saturnina") == id_user):
+            if (comment.get("user_id") == id_user):
                 comment = comment
                 break
  

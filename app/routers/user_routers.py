@@ -125,8 +125,10 @@ async def Todos_comentarios():
     return response
 
 
-@router.get("/comments/{user_id}")
+@router.get("/comments/{user_id}", dependencies=[Depends(JWTBearer())])
 async def Todos_comentarios_usuario(user_id: str, token: Request):
+    token = token.headers.get("authorization").split()
+    await Check_rol_user(token[1])
     response = await Get_comments_user(user_id)
     return response
 

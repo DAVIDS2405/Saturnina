@@ -130,6 +130,7 @@ async def Create_products(data,imagen_producto):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
 
     if not category:
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
                             "msg": "Esta categoría no existe"})
 
@@ -174,6 +175,7 @@ async def Update_products(id_product,data,imagen_producto):
     
 
     if not category:
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
                             "msg": "Esta categoría no existe"})
         

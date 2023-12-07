@@ -177,6 +177,7 @@ async def New_password(token,data):
     
     check_token = await User_Db.select("user_saturnina")
     if(new_password != check_new_password):
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Las password no coinciden"})
     
     for user in check_token:
@@ -215,11 +216,13 @@ async def User_profile(data):
     check_user_db = await UserDb.select(decode_token.get("user_id"))
 
     if not check_user_db:
+        await UserDb.close()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={
                             "msg": "El usuario no existe"})
     
     data_user_keys = {"nombre", "apellido", "telefono", "email"}
     data_user_filtered = {key: check_user_db[key] for key in data_user_keys if key in check_user_db}
+    await UserDb.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=data_user_filtered)
 
 async def User_profile_actualizar_contrasenia(password,data):
@@ -322,6 +325,7 @@ async def Create_order(data, transfer_image):
         return False
 
     if not await is_image(transfer_image):
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
                             "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
         
@@ -402,6 +406,7 @@ async def Update_order(id_order,data,transfer_image):
         return False
 
     if not await is_image(transfer_image):
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
                             "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
         

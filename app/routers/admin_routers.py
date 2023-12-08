@@ -70,7 +70,7 @@ async def Actualizar_producto(id_product:str,token: Request,data:Products = Body
     
 @router.delete("/products/{id_product}",dependencies=[Depends(JWTBearer())])
 async def Eliminar_Producto(id_product: str, token: Request):
-    token = token.headers.get("authorization").split(dependencies=[Depends(JWTBearer())])
+    token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])
     response = await Delete_products(id_product)
     return response

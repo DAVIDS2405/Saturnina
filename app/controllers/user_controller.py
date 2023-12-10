@@ -333,7 +333,7 @@ async def Create_order(data, transfer_image):
     for value in data.products: 
         found = False
         for check_product in db_products:
-            if check_product.get("id") == value.id:
+            if check_product.get("id") == value.id_producto:
                 found = True
                 break
         if not found:

@@ -330,6 +330,11 @@ async def Create_order(data, transfer_image):
                             "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
         
     db_products = await User_Db.select("product")
+
+    if not db_products:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                            "msg": "No existe este producto"})
     for value in data.products: 
         found = False
         for check_product in db_products:

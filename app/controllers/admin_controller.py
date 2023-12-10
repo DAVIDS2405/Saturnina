@@ -67,18 +67,15 @@ async def Delete_category(id_category):
     check_products = await User_Db.select("product")
     
 
-        
+    if not check_id_category:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"No existe esta categoría"})
+
     for product in check_products:
         if(product.get("category") == id_category):
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail={"msg":"Existen productos ligados a esta categoría"})
-    
-    if not check_id_category:
-        await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"No existe esta categoría"})
-     
-
-    
+       
     await User_Db.delete(id_category)
     await User_Db.close()
     raise HTTPException(status_code = status.HTTP_200_OK,detail={"msg":"La categoría selecciona se ha eliminado con éxito"})

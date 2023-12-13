@@ -308,7 +308,7 @@ async def View_order(id_user):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"No tienes ningún pedido"})
     
     await User_Db.close()
-    raise HTTPException(status_code=status.HTTP_302_FOUND,detail=all_orders)
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=all_orders)
 
 async def Create_order(data, transfer_image):
     

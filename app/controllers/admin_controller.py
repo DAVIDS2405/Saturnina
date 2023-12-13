@@ -220,7 +220,7 @@ async def Get_all_orders():
                             "msg": "No tienes ningún pedido"})
 
     await User_Db.close()
-    raise HTTPException(status_code=status.HTTP_302_FOUND, detail=all_orders)
+    raise HTTPException(status_code=status.HTTP_200_OK, detail=all_orders)
     
 async def Update_order_status(id_orden_detail,data):
     UserDb = await Connection()

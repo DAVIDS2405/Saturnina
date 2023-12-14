@@ -54,8 +54,7 @@ async def Obtener_Productos(id_products : str):
 
 
 @router.post("/products", dependencies=[Depends(JWTBearer())])
-async def Crear_Producto(token: Request, data:Products = Body(),
-    imagen_producto: UploadFile = File()):
+async def Crear_Producto(token: Request, imagen_producto: list[UploadFile], data: Products = Body(),):
     token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])
     response = await Create_products(data,imagen_producto)

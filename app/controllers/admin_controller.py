@@ -122,9 +122,9 @@ async def Create_products(data,imagen_producto):
     User_Db = await Connection()
     products_list = await User_Db.select("product")
     category = await User_Db.select(id_categoria)
-    
-    if not await is_image(imagen_producto):
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+    for imagenes in imagen_producto:
+        if not await is_image(imagenes):
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
 
     if not category:
         await User_Db.close()
@@ -136,14 +136,17 @@ async def Create_products(data,imagen_producto):
         if products.get("name") == nombre_producto:
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg":"Este producto ya existe"})
-        
-    upload_cloudinary = await Upload_image(imagen_producto.file)
-    cloudinary_key = {"public_id","secure_url"}
-    data_cloudinary_filtered = {key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
+    cloudinary_data = []
+    for imagenes in imagen_producto:
+        upload_cloudinary = await Upload_image(imagenes.file)
+        cloudinary_key = {"public_id", "secure_url"}
+        data_cloudinary_filtered = {key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
+        cloudinary_data.append(data_cloudinary_filtered)
+    
  
 
     data_product = {"name": nombre_producto, "category": id_categoria,
-                    "descripcion": data.descripcion, "precio": data.precio, "imagen": data_cloudinary_filtered, "tallas": data.tallas, "colores":data.colores}
+                    "descripcion": data.descripcion, "precio": data.precio, "imagen": cloudinary_data, "tallas": data.tallas, "colores":data.colores}
     
 
     await User_Db.create("product",data_product)

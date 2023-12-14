@@ -3,7 +3,6 @@ import secrets
 import string
 from typing import List
 import bcrypt
-from fastapi import Body
 from pydantic import BaseModel, EmailStr, Field, SecretStr
 
 class Email_User(BaseModel):

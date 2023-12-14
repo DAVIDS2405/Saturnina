@@ -1,5 +1,5 @@
 from config.cloudinary_config import Upload_image,Delete_image
-from  models.admin_model import Category, Order_update_status
+from  models.admin_model import Category, Order_update_status, Products, tallas_productos
 from database.database import Connection
 from fastapi import HTTPException,status
 
@@ -140,9 +140,11 @@ async def Create_products(data,imagen_producto):
     upload_cloudinary = await Upload_image(imagen_producto.file)
     cloudinary_key = {"public_id","secure_url"}
     data_cloudinary_filtered = {key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
-    
+ 
+
     data_product = {"name": nombre_producto, "category": id_categoria,
-                    "descripcion": data.descripcion, "precio": data.precio, "imagen": data_cloudinary_filtered}
+                    "descripcion": data.descripcion, "precio": data.precio, "imagen": data_cloudinary_filtered, "tallas": data.tallas, "colores":data.colores}
+    
 
     await User_Db.create("product",data_product)
     await User_Db.close()

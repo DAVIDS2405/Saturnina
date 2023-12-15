@@ -503,3 +503,31 @@ async def Get_comments_user(id_user):
  
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)
+
+async def Update_comments(data,id_comment):
+    User_Db = await Connection()
+    check_comment = await User_Db.select(id_comment)
+    check_user = await User_Db.select(data.user_id)
+    check_product = await User_Db.select(data.id_producto)
+    
+    if not check_product:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg":"Este producto no existe"})
+
+    if not check_user:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg":"Este usuario no existe"})
+    if not check_comment:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"No se encuentra este comentario"})
+    
+    if check_comment.get("user_id") != data.user_id:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg":"Este no es tu comentario"})    
+    if check_comment.get('id_producto') != data.id_producto:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg":"Este producto no le corresponde a este comentario"})    
+    
+    await User_Db.update(id_comment,data)
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu comentario se ha actualizado"})

@@ -18,4 +18,4 @@ async def Connection():
     except Exception as e:
         print("Ocurrió un error con surreal:", str(e))
         await conn.close(),
-        raise ( HTTPException(status_code= 502,detail={"error":str(e)}))
+        raise HTTPException(status_code= 502,detail={"error":str(e)})

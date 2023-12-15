@@ -122,8 +122,8 @@ async def Create_products(data,imagen_producto):
     User_Db = await Connection()
     products_list = await User_Db.select("product")
     category = await User_Db.select(id_categoria)
-    for imagenes in imagen_producto:
-        if not await is_image(imagenes):
+    for imagen in imagen_producto:
+        if not await is_image(imagen):
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
 
     if not category:
@@ -137,8 +137,8 @@ async def Create_products(data,imagen_producto):
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg":"Este producto ya existe"})
     cloudinary_data = []
-    for imagenes in imagen_producto:
-        upload_cloudinary = await Upload_image(imagenes.file)
+    for imagen in imagen_producto:
+        upload_cloudinary = await Upload_image(imagen.file)
         cloudinary_key = {"public_id", "secure_url"}
         data_cloudinary_filtered = {key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
         cloudinary_data.append(data_cloudinary_filtered)

@@ -167,9 +167,10 @@ async def Update_products(id_product,data,imagen_producto):
 
         return False
 
-    if not await is_image(imagen_producto):
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
-                            "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+    for imagen in imagen_producto:
+        if not await is_image(imagen):
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                                "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
         
     if not check_product:
         await User_Db.close()
@@ -180,13 +181,17 @@ async def Update_products(id_product,data,imagen_producto):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
                             "msg": "Esta categoría no existe"})
-        
-    await Delete_image(check_product.get("imagen").get("public_id"))
-    upload_cloudinary = await Upload_image(imagen_producto.file)
-    cloudinary_key = {"public_id","secure_url"}
-    data_cloudinary_filtered = {key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
+    cloudinary_data = []
+    for imagen in imagen_producto:
+        await Delete_image(check_product.get("imagen").get("public_id"))
+        upload_cloudinary = await Upload_image(imagen.file)
+        cloudinary_key = {"public_id", "secure_url"}
+        data_cloudinary_filtered = {
+            key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
+        cloudinary_data.append(data_cloudinary_filtered)
     
-    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria,"new_image":data_cloudinary_filtered})
+
+    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria,"new_image":cloudinary_data})
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu producto se ha actualizado"})
 

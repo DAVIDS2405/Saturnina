@@ -183,7 +183,7 @@ async def Update_products(id_product,data,imagen_producto):
                             "msg": "Esta categoría no existe"})
     cloudinary_data = []
     for imagen in imagen_producto:
-        await Delete_image(check_product.get("imagen").get("public_id"))
+        await Delete_image(check_product["imagen"]["public_id"])
         upload_cloudinary = await Upload_image(imagen.file)
         cloudinary_key = {"public_id", "secure_url"}
         data_cloudinary_filtered = {
@@ -214,7 +214,7 @@ async def Delete_products(id_product):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail={"msg":"necesitas primero poner en 'Cancelado' todas los pedidos que contengan este producto"})
     
-    await Delete_image(check_product.get("imagen").get("public_id"))
+    await Delete_image(check_product["imagen"]["public_id"])
     await User_Db.delete(id_product)
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu producto se ha eliminado"})

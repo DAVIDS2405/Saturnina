@@ -474,7 +474,7 @@ async def Create_comments(data):
 async def Get_comments():
     User_Db = await Connection()
     
-    comments = await User_Db.query('select user_id.nombre, user_id.apellido,id,id_producto.name,calificacion,descripcion from comments fetch user_saturnina,product')
+    comments = await User_Db.query('select user_id.nombre, user_id.apellido,id,id_producto,calificacion,descripcion from comments fetch user_saturnina,product')
     
     if not comments:
         await User_Db.close()

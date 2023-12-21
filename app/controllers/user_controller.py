@@ -4,7 +4,7 @@ from config.cloudinary_config import Delete_image, Upload_image
 from config.smtp_config import smtp_config
 from database.database import Connection
 from helpers.jwt_helper import decodeJWT, signJWT
-from models.user_model import Comment_product, User_DB, User_Recover_Password, Order
+from models.user_model import Comment_product, User_DB, User_Recover_Password
     
 async def Login(data):
     
@@ -334,12 +334,14 @@ async def Create_order(data, transfer_image):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
                             "msg": "No existe este producto"})
+        
+    
     for value in data.products: 
         found = False
         for check_product in db_products:
             if check_product.get("id") == value.id_producto:
                 found = True
-                break
+                break   
         if not found:
             found = False
             break

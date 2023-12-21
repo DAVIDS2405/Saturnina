@@ -159,17 +159,19 @@ def test_order():
         assert "id_orden" in response.json()['detail'][0]['result'][0]
     elif response.status_code == 404:
         assert 'No tienes ningún pedido' in response.json()['detail']['msg']
+        
 def test_create_order():
     token = get_auth_token()
-    header = {"Authorization": f"Bearer {token}"}
-    transfer_image_file = open("C:/Users/sebas/Downloads/icon-foreground.png", "rb")
+    header = {"Authorization": f"Bearer {token}",
+             " Content-Type": "multipart/form-data"}
+    transfer_image_file = open("C:/Users/sebas/Downloads/icon-foreground.png","rb")
 
     payload = FormData(
-        data='{"user_id": "user_saturnina:duarv161uh97q49gus2r", "price_order": 12.5, "products": [{"id_producto": "product:bm1s2kehfff6s2prcxih", "cantidad": 1}, {"id_producto": "product:bm1s2kehfff6s2prcxih", "cantidad": 3}], "nombre": "David", "apellido": "Basantes", "direccion": "La magdalena", "email": "sebastian2405lucero@hotmail.com", "telefono": "090095964", "descripcion": "Me gustaria que fuera de color rojo y el bordado con una letra D"}',        
-        file={"transfer_image": ("icon-foreground.png", transfer_image_file, "image/png"), 'type':'image/png'}
-        
+        data='{"user_id": "user_saturnina:duarv161uh97q49gus2r", "price_order": 12.5, "products": [{"id_producto": "product:bm1s2kehfff6s2prcxih", "cantidad": 1}, {"id_producto": "product:bm1s2kehfff6s2prcxih", "cantidad": 3}], "nombre": "David", "apellido": "Basantes", "direccion": "La magdalena", "email": "sebastian2405lucero@hotmail.com", "telefono": "090095964", "descripcion": "Me gustaria que fuera de color rojo y el bordado con una letra D"}'
     )
-    
-    response = client.post("/api/v1/order",headers=header,data=payload)
+    files={'transfer_image': ("icon-foreground.png", transfer_image_file)}
+    response = client.post("/api/v1/order",headers=header,data=payload,files=files)
     print(response.json())
-    assert response.status_code == 200
+    assert response.status_code == 201
+    assert "Pedido realizado" in response.json()["detail"]['msg']
+

@@ -39,9 +39,9 @@ class Products(BaseModel):
     descripcion: str = Field(examples=["Repara tu  gorra con lindos bordados"])
     precio: float  = Field(examples=[22.22])
     tallas: List[tallas_productos] = [
-        {"name": "Talla XL", "status": "true"}, {"name": "Talla L", "status": "true"}]
+        {"name": "Talla XL", "status": True}, {"name": "Talla L", "status": True}]
     colores: List[colores_productos] = [
-        {"name": "verde", "status": "true"}, {"name": "morado", "status": "true"}]
+        {"name": "verde", "status": True}, {"name": "morado", "status": True}]
     
     @classmethod
     def __get_validators__(cls):

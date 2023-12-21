@@ -1,6 +1,9 @@
+from dotenv import load_dotenv
 from surrealdb import Surreal
 from fastapi import HTTPException
-import os 
+import os
+
+load_dotenv()
 
 url_db = os.getenv("URL_DB")
 username_db = os.getenv("USER_DB")

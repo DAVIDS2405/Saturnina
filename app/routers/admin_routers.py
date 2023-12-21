@@ -17,18 +17,18 @@ async def Listar_categorias():
     return response
 
 @router.post("/category", dependencies=[Depends(JWTBearer())])
-async def Crear_categoria(token: Request,data: Category = Body(example={
+async def Crear_categoria(token: Request,data: Category = Body(examples=[{
     "name": "Reparación de ropa"
-})):
+}])):
     token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])
     response = await Create_category(data)
     return response
 
 @router.put("/category/{id_category}",dependencies=[Depends(JWTBearer())])
-async def Actualizar_categoria(token: Request,id_category:str, data:Category = Body(example={
+async def Actualizar_categoria(token: Request,id_category:str, data:Category = Body(examples=[{
     "name":"Reparacion de ropa"
-})):
+}])):
     token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])
     response = await Update_category(id_category,data)
@@ -82,9 +82,9 @@ async def Obtener_ordenes(token:Request):
     return response
 
 @router.put("/orders/{id_order_detail}",dependencies=[Depends(JWTBearer())])
-async def Actualizar_orden_status(id_order_detail: str, token: Request, data: Order_update_status = Body(example={
+async def Actualizar_orden_status(id_order_detail: str, token: Request, data: Order_update_status = Body(examples=[{
     "status_order": "Renviar Transferencia"
-})):
+}])):
     token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])
     response = await Update_order_status(id_order_detail, data)

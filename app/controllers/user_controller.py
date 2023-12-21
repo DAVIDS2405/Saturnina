@@ -226,10 +226,10 @@ async def User_profile(data):
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=data_user_filtered)
 
 async def User_profile_actualizar_contrasenia(password,data):
-    data = data[1]
+    decode_token = await decodeJWT(data)
     new_password = password.new_password
     check_new_password = password.check_password
-    id_user = data.get('id')
+    id_user = decode_token.get('user_id')
     User_Db = await Connection()
     user_update_password = await User_Db.select(id_user)
     
@@ -302,7 +302,6 @@ async def View_order(id_user):
     
     all_orders = await User_Db.query("select *, id_producto.*,id_orden.* from order_detail where id_orden.user_id = ($id_user) fetch product, order;", {"id_user": id_user})
     
-
     if not all_orders[0]['result'] :
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"No tienes ningún pedido"})

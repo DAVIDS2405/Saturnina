@@ -167,11 +167,88 @@ def test_create_order():
     transfer_image_file = open("C:/Users/sebas/Downloads/icon-foreground.png","rb")
 
     payload = FormData(
-        data='{"user_id": "user_saturnina:duarv161uh97q49gus2r", "price_order": 12.5, "products": [{"id_producto": "product:bm1s2kehfff6s2prcxih", "cantidad": 1}, {"id_producto": "product:bm1s2kehfff6s2prcxih", "cantidad": 3}], "nombre": "David", "apellido": "Basantes", "direccion": "La magdalena", "email": "sebastian2405lucero@hotmail.com", "telefono": "090095964", "descripcion": "Me gustaria que fuera de color rojo y el bordado con una letra D"}'
+        data='{"user_id": "user_saturnina:duarv161uh97q49gus2r", "price_order": 12.5, "products": [{"id_producto": "product:bm1s2kehfff6s2prcxih", "cantidad": 1,"talla":"Talla x", "color": "Rojo"}, {"id_producto": "product:bm1s2kehfff6s2prcxih", "cantidad": 3,"talla": "Talla x","color": "Rojo"}], "nombre": "David", "apellido": "Basantes", "direccion": "La magdalena", "email": "sebastian2405lucero@hotmail.com", "telefono": "090095964", "descripcion": "Me gustaria que fuera de color rojo y el bordado con una letra D"}'
     )
     files={'transfer_image': ("icon-foreground.png", transfer_image_file)}
     response = client.post("/api/v1/order",headers=header,data=payload,files=files)
-    print(response.json())
     assert response.status_code == 201
     assert "Pedido realizado" in response.json()["detail"]['msg']
+    
+def test_update_order():
+    token = get_auth_token()
+    header = {"Authorization": f"Bearer {token}",
+              " Content-Type": "multipart/form-data"}
+    transfer_image_file = open("C:/Users/sebas/Downloads/Flutter.png","rb")
+    
+    payload = FormData(
+        data ='{"nombre": "David","apellido": "Basantes","direccion": "La magdalena","email": "sebastian2405lucero@hotmail.com","telefono": "090095964"}',
+    )
+    files={'transfer_image': ("Flutter.png", transfer_image_file)}
 
+    id_order = "order:8jwi04s9yoec8a0mj7e0"
+    response = client.put(f"api/v1/order/{id_order}",headers=header,data=payload,files=files)
+    print(response)
+    assert response.status_code == 202
+    assert "Tu pedido fue actualizado" in response.json()['detail']['msg']
+    
+def test_comments():
+    token = get_auth_token()
+    header = {"Authorization": f"Bearer {token}"}
+    response = client.get("/api/v1/comments",headers=header)
+    
+    if response.status_code == 202:
+        assert "calificacion" in response.json()['detail'][0]["result"][0]
+        
+    elif response.status_code == 422:
+        assert "No hay comentarios" in response.json()['detail']['msg']
+        
+def test_comments_create():
+    token = get_auth_token()
+    header = {"Authorization": f"Bearer {token}"}
+    payload = {
+        
+        "descripcion": "Me gusto mucho la decoracion les recomiendo",
+        "user_id": "user_saturnina:duarv161uh97q49gus2r",
+        "id_producto": "product:3q7aaw3xp9gioe2mvwcg",
+        "calificacion": 4
+        
+    }
+    response = client.post("/api/v1/comments",json=payload,headers=header)
+    if response.status_code == 422:
+        assert "No puedes realizar mas comentarios de este producto" in response.json()['detail']['msg']
+    elif response.status_code == 201:
+        assert "Tu comentario se ha creado" in response.json()[
+            'detail']['msg']
+
+def test_comments_user():
+    token = get_auth_token()
+    user_id = 'user_saturnina:duarv161uh97q49gus2r'
+    header = {"Authorization": f"Bearer {token}"}
+    
+    response = client.get(f"/api/v1/comments/{user_id}",headers=header)
+    
+    if response.status_code == 202:
+        assert "calificacion" in response.json()['detail'][0]
+        
+    elif response.status_code == 422:
+        assert "No hay comentarios" in response.json()['detail']["msg"]
+        
+def test_update_comments():
+    token = get_auth_token()
+    header = {"Authorization": f"Bearer {token}"}
+    id_comment ="comments:2tqxo62sgkj8nml69zmd"
+    payload = {
+        
+        "descripcion": "Me gusto mucho la decoracion les recomiendo",
+        "user_id": "user_saturnina:duarv161uh97q49gus2r",
+        "id_producto": "product:3q7aaw3xp9gioe2mvwcg",
+        "calificacion": 2
+        
+    }
+    response = client.put(f'/api/v1/comments/{id_comment}',headers=header,json=payload)
+    
+    if response.status_code == 202:
+        assert "Tu comentario se ha actualizado" in response.json()['detail']["msg"]
+    elif response.status_code == 401:
+        assert "Este no es tu comentario" in response.json()[
+            'detail']["msg"]

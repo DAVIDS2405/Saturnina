@@ -43,7 +43,9 @@ async def Update_category(id_category,data):
     all_categorys = await User_Db.select("category")
     
 
-
+    if not check_category:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"No existe esta categoría"})
+    
     if(check_category.get("name") == category_name):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"No puede ser igual al nombre que ya posee"})
@@ -53,8 +55,7 @@ async def Update_category(id_category,data):
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
                                 "msg": "Este nombre de categoría ya existe en otra categoría"})
-    if not check_category:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"No existe esta categoría"})
+
         
         
     await User_Db.query('update ($id) merge {"name":($new_name_category)};' ,{"id":id_category, "new_name_category":category_name})
@@ -249,13 +250,14 @@ async def Update_order_status(id_orden_detail,data):
     await UserDb.query('update ($id) merge {"status":($new_status)};', {"id": id_orden_detail, "new_status": data.status_order})
     await UserDb.close()
     raise HTTPException(status_code=status.HTTP_200_OK, detail={
-                        "msg": "EL estado se actualizo con éxito"})
+                        "msg": "El estado se actualizo con éxito"})
 
 
 async def Delete_comments(id_coment):
     User_Db = await Connection()
     
     check_comment = await User_Db.select(id_coment)
+    
     print(check_comment)
     if not check_comment:
         await User_Db.close()

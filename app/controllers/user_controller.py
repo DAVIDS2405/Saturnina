@@ -341,7 +341,17 @@ async def Create_order(data, transfer_image):
         for check_product in db_products:
             if check_product.get("id") == value.id_producto:
                 found = True
-                break   
+               
+                if str(value.talla) not in [t.get("name") for t in check_product.get("tallas",[])]:
+                    await User_Db.close()
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg":"No existe esta talla para alguno de los productos"})
+
+                
+                if  str(value.color) not in [c.get("name") for c in check_product.get("colores",[])]:
+                    await User_Db.close()
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                                            "msg": "En algunos de los productos el color esta mal"})
+                        
         if not found:
             found = False
             break

@@ -498,18 +498,13 @@ async def Get_comments():
 async def Get_comments_user(id_user):
     User_Db = await Connection()
     comment = None
-    comments = await User_Db.select("comments")
+    comments = await User_Db.query("select user_id.nombre, user_id.apellido,user_id.id,id,id_producto,calificacion,descripcion from comments where user_id = ($id_usuario) fetch user_saturnina,product", {"id_usuario": id_user})
 
     if not comments:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No hay comentarios"})
     
-    if not comments:
-        for comment in comments:
-            if (comment.get("user_id") == id_user):
-                comment = comment
-                break
  
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)

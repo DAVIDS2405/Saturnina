@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from routers import user_routers,admin_routers
 
 app = FastAPI(
@@ -23,7 +25,7 @@ app.add_middleware(
 app.include_router(user_routers.router,prefix="/api/v1")
 app.include_router(admin_routers.router,prefix="/api/v1")
 
+
 @app.get("/",include_in_schema=False)
 async def read_root():
     return RedirectResponse("/api/v1/docs")
-

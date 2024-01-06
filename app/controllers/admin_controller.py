@@ -266,15 +266,4 @@ async def Delete_comments(id_coment):
     await User_Db.delete(check_comment.get("id"))
     await User_Db.close()
     raise HTTPException(
-        status_code=status.HTTP_202_ACCEPTED, detail={"msg":"Este comentario se ha eliminado"})
-    
-    
-    
-    
-
-
-    
-    
-
-    
-    
+        status_code=status.HTTP_202_ACCEPTED, detail={"msg":"Este comentario se ha eliminado"})  

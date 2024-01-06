@@ -40,43 +40,25 @@ class User_Recover_Password(BaseModel):
             
         if len(raw_password) < 9 or len (raw_password) > 18:
             raise ValueError(
-                "La contraseña debe tener 9 caracteres unicamente")
+                "La contraseña debe tener 9 o 18 caracteres unicamente")
 
         return value
     
-    @validator("check_password")
-    def validate_check_password(cls, value):
-        raw_password = value.get_secret_value()
-
-        if not any(char.isupper() for char in raw_password):
-            raise ValueError(
-                "La contraseña debe contener al menos una letra mayúscula")
-
-        if not any(char.isdigit() for char in raw_password):
-            raise ValueError("La contraseña debe contener al menos un número")
-
-        special_chars = "!@#$%^&*()-_+=<>?/[]{}|"
-        if not any(char in special_chars for char in raw_password):
-            raise ValueError(
-                "La contraseña debe contener al menos un carácter especial")
-            
-        if len(raw_password) < 9 or len(raw_password) > 18:
-            raise ValueError(
-                "La contraseña debe tener 9 caracteres unicamente")
-
-        return value
+    
 class User_Login(BaseModel):
     email: EmailStr
     password: SecretStr 
     
-    @validator("email")
+    @validator("email", pre=True)
     def check_email(cls,value):
         if value is None:
-            raise ValueError("Porfavor ingresa un correo")
+            raise ValueError("Ingresa un correo")
         return value
             
     
-class User_Register(User_Login):
+class User_Register(BaseModel):
+    email: EmailStr
+    password: SecretStr
     nombre: str = Field(min_length=3, max_length=10)
     apellido: str = Field(min_length=3, max_length=10)
     telefono: str = Field(min_length=10, max_length=10)
@@ -99,6 +81,34 @@ class User_Register(User_Login):
     def validate_telefono(cls, value):
         if len(value) != 10:
             raise ValueError("El telefono debe de ser unicamente de 10 digitos")
+        return value
+    
+    @validator("password")
+    def validate_password(cls, value):
+        raw_password = value.get_secret_value()
+
+        if not any(char.isupper() for char in raw_password):
+            raise ValueError(
+                "La contraseña debe contener al menos una letra mayúscula")
+
+        if not any(char.isdigit() for char in raw_password):
+            raise ValueError("La contraseña debe contener al menos un número")
+
+        special_chars = "!@#$%^&*()-_+=<>?/[]{}|"
+        if not any(char in special_chars for char in raw_password):
+            raise ValueError(
+                "La contraseña debe contener al menos un carácter especial")
+
+        if len(raw_password) < 9 or len(raw_password) > 18:
+            raise ValueError(
+                "La contraseña debe tener 9 o 18 caracteres unicamente")
+
+        return value
+    
+    @validator("email", pre=True)
+    def check_email(cls,value):
+        if value is None:
+            raise ValueError("Ingresa un correo")
         return value
 
 class User_Update(BaseModel):

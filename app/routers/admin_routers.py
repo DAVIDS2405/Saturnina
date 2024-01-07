@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter,Body, Depends, File, Request, UploadFile
 from middlewares.check_admin_user_JWT import Check_rol_admin
 from controllers.admin_controller import Create_category, Create_products, Delete_comments, Delete_products, Delete_category, Get_all_orders, Get_one_products, Get_products, List_category, Update_category, Update_order_status, Update_products
@@ -61,7 +62,7 @@ async def Crear_Producto(token: Request, imagen_producto: list[UploadFile], data
     return response
 
 @router.put("/products/{id_product}",dependencies=[Depends(JWTBearer())])
-async def Actualizar_producto(id_product:str,imagen_producto: list[UploadFile],token: Request,data:Products = Body(...)):
+async def Actualizar_producto(id_product:str,imagen_producto: Optional[list[UploadFile]],token: Request,data:Products = Body(...)):
     token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])
     response  = await Update_products(id_product,data,imagen_producto)
@@ -83,7 +84,8 @@ async def Obtener_ordenes(token:Request):
 
 @router.put("/orders/{id_order_detail}",dependencies=[Depends(JWTBearer())])
 async def Actualizar_orden_status(id_order_detail: str, token: Request, data: Order_update_status = Body(examples=[{
-    "status_order": "Renviar Transferencia"
+    "status_order": "Rechazado",
+    "descripcion": "Se ha rechazado tu orden ",
 }])):
     token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])

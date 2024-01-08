@@ -120,14 +120,6 @@ async def Create_products(data,imagen_producto):
         
         return False
 
-    async def file_image_size(file) -> bool:
-        allowed_size_mb = 5
-        file_size_mb = len(file.file.read()) / \
-            (1024 * 1024)  # Tamaño en megabytes
-        if file_size_mb > allowed_size_mb:
-            return False
-        
-        return True
 
     User_Db = await Connection()
     products_list = await User_Db.select("product")
@@ -136,12 +128,7 @@ async def Create_products(data,imagen_producto):
         if not await is_image(imagen):
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
         
-        if not await file_image_size(imagen):
-            raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail={
-                    "msg": f"La imagen debe ser menor o igual a 5 MB."},
-            )
+
     
     if not category:
         await User_Db.close()
@@ -184,27 +171,13 @@ async def Update_products(id_product,data,imagen_producto):
 
         return False
     
-    async def file_image_size(file) -> bool:
-        allowed_size_mb = 5
-        file_size_mb = len(file.file.read()) / \
-            (1024 * 1024)  # Tamaño en megabytes
-        if file_size_mb > allowed_size_mb:
-            return False
-        
-        return True
 
     for imagen in imagen_producto:
         if not await is_image(imagen):
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
                                 "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
         
-        if not await file_image_size(imagen):
-            raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail={
-                    "msg": f"La imagen debe ser menor o igual a 5 MB."},
-            )
-        
+
     if not check_product:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"Este producto no existe"}) 

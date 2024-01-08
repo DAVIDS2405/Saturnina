@@ -55,9 +55,9 @@ class Products(BaseModel):
     descripcion: str = Field(examples=["Repara tu  gorra con lindos bordados"],max_length=50,min_length=5)
     precio: float = Field(examples=[22.22], gt=1, lt=500)
     tallas: Optional[List[tallas_productos]] = [
-        {"name": "S", "status": True}, {"name": "S", "status": True}]
+        {"name": "S", "status": True}, {"name": "S", "status": True}] or None
     colores: Optional[List[colores_productos]] = [
-        {"name": "verde", "status": True}, {"name": "morado", "status": True}]
+        {"name": "verde", "status": True}, {"name": "morado", "status": True}] or None
     
     
     @validator("nombre_producto", pre=True)

@@ -323,11 +323,30 @@ async def Create_order(data, transfer_image):
             return True
 
         return False
+    
+    async def file_image_size(file) -> bool:
+        allowed_size_mb = 5
+        file_size_mb = len(file.file.read()) / \
+            (1024 * 1024)  # Tamaño en megabytes
+        if file_size_mb > allowed_size_mb:
+            return False
+        
+        return True
 
+    
     if not await is_image(transfer_image):
-        await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
-                            "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+            await User_Db.close()
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                                "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+            
+    if not await file_image_size(transfer_image):
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail={
+                    "msg": f"La imagen debe ser menor o igual a 5 MB."},
+            )
+        
+        
         
     db_products = await User_Db.select("product")
 
@@ -412,6 +431,8 @@ async def Create_order(data, transfer_image):
 
 async def Update_order(id_order,data,transfer_image):
     User_Db = await Connection()
+    fecha_actual = datetime.now()
+    fecha_actual = str(fecha_actual)
     
     async def is_image(file) -> bool:
         allowed_extensions = ["jpg", "jpeg", "png", "webp"]
@@ -422,11 +443,27 @@ async def Update_order(id_order,data,transfer_image):
 
         return False
 
-    if not await is_image(transfer_image):
-        await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
-                            "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
-        
+    async def file_image_size(file) -> bool:
+        allowed_size_mb = 5
+        file_size_mb = len(file.file.read()) / \
+            (1024 * 1024)  # Tamaño en megabytes
+        if file_size_mb > allowed_size_mb:
+            return False
+
+        return True
+
+    if transfer_image:
+        if not await is_image(transfer_image):
+            await User_Db.close()
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                                "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+
+        if not await file_image_size(transfer_image):
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail={
+                    "msg": f"La imagen debe ser menor o igual a 5 MB."},
+            )
 
     
     check_order = await User_Db.select(id_order)
@@ -435,17 +472,22 @@ async def Update_order(id_order,data,transfer_image):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"el id de la orden es incorrecto"})
     
-    await Delete_image(check_order.get("image_transaccion").get("public_id"))
-    upload_cloudinary = await Upload_image(transfer_image.file)
-    cloudinary_key = {"public_id", "secure_url"}
-    data_cloudinary_filtered = {
-        key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
-    
-    fecha_actual = datetime.now()
-    fecha_actual = str(fecha_actual)
-    
-    await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"image_transaccion":($new_image),"order_date":($new_date),"email":($new_email)};', {"id":check_order.get("id"),"new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email":data.email, "new_image": data_cloudinary_filtered,"new_date":fecha_actual})
-    
+    if transfer_image:
+        await Delete_image(check_order.get("image_transaccion").get("public_id"))
+        upload_cloudinary = await Upload_image(transfer_image.file)
+        cloudinary_key = {"public_id", "secure_url"}
+        data_cloudinary_filtered = {
+            key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
+
+
+
+        await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"image_transaccion":($new_image),"order_date":($new_date),"email":($new_email)};', {"id": check_order.get("id"), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_image": data_cloudinary_filtered, "new_date": fecha_actual})
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail={
+                        "msg": "Tu pedido fue actualizado"})
+        
+    await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"order_date":($new_date),"email":($new_email)};', {"id": check_order.get("id"), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_date": fecha_actual})
+
 
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu pedido fue actualizado"})
@@ -498,7 +540,6 @@ async def Get_comments():
 
 async def Get_comments_user(id_user):
     User_Db = await Connection()
-    comment = None
     comments = await User_Db.query("select user_id.nombre, user_id.apellido,user_id.id,id,id_producto,calificacion,descripcion from comments where user_id = ($id_usuario) fetch user_saturnina,product", {"id_usuario": id_user})
 
     if not comments:

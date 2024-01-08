@@ -62,7 +62,7 @@ async def Crear_Producto(token: Request, imagen_producto: list[UploadFile], data
     return response
 
 @router.put("/products/{id_product}",dependencies=[Depends(JWTBearer())])
-async def Actualizar_producto(id_product:str,imagen_producto: Optional[list[UploadFile]],token: Request,data:Products = Body(...)):
+async def Actualizar_producto(id_product: str, token: Request, data: Products = Body(...), imagen_producto: Optional[list[UploadFile]] = None):
     token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])
     response  = await Update_products(id_product,data,imagen_producto)

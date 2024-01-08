@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Annotated, Optional
 from fastapi import APIRouter, Body, Depends, Request, UploadFile, File
 from middlewares.check_admin_user_JWT import Check_rol_user
 from controllers.user_controller import Check_email, Check_token, Create_comments, Create_order, Get_comments, Get_comments_user, Login, New_password, Recover_Password, Register, Update_comments, Update_order, User_detail, User_detail_Update, User_profile, User_profile_actualizar_contrasenia, View_order
@@ -120,7 +120,7 @@ async def Crear_pedido(token: Request, data: Order = Body(), transfer_image: Upl
 
 
 @router.put("/order/{id_order}", dependencies=[Depends(JWTBearer())])
-async def Actualizar_orden(id_order: str, token: Request, data: Order_update = Body(), transfer_image: Optional[UploadFile] = File()):
+async def Actualizar_orden(id_order: str, token: Request, data: Order_update = Body(), transfer_image: UploadFile = None):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
     response = await Update_order(id_order, data, transfer_image)

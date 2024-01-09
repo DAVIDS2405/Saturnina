@@ -120,7 +120,7 @@ async def Crear_pedido(token: Request, data: Order = Body(), transfer_image: Upl
 
 
 @router.put("/order/{id_order}", dependencies=[Depends(JWTBearer())])
-async def Actualizar_orden(id_order: str, token: Request, data: Order_update = Body(), transfer_image: UploadFile = None):
+async def Actualizar_orden(id_order: str, token: Request,transfer_image: UploadFile | None = None, data: Order_update = Body() ):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
     response = await Update_order(id_order, data, transfer_image)

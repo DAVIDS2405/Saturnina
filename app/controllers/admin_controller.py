@@ -171,11 +171,11 @@ async def Update_products(id_product,data,imagen_producto):
 
         return False
     
-
-    for imagen in imagen_producto:
-        if not await is_image(imagen):
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
-                                "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+    if imagen_producto:
+        for imagen in imagen_producto:
+            if not await is_image(imagen):
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                                    "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
         
 
     if not check_product:
@@ -187,23 +187,30 @@ async def Update_products(id_product,data,imagen_producto):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
                             "msg": "Esta categoría no existe"})
-    cloudinary_data = []
+   
     
-    for imagen in imagen_producto:
-        public_ids = [item['public_id']
-                      for item in check_product.get("imagen")]
+    if imagen_producto:
+        cloudinary_data = []
+        for imagen in imagen_producto:
+            public_ids = [item['public_id']
+                        for item in check_product.get("imagen")]
+            
+            await Delete_image(str([id_imagen_cloudinary for id_imagen_cloudinary in public_ids]))
+            upload_cloudinary = await Upload_image(imagen.file)
+            cloudinary_key = {"public_id", "secure_url"}
+            data_cloudinary_filtered = {
+                key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
+            cloudinary_data.append(data_cloudinary_filtered)
         
-        await Delete_image(str([id_imagen_cloudinary for id_imagen_cloudinary in public_ids]))
-        upload_cloudinary = await Upload_image(imagen.file)
-        cloudinary_key = {"public_id", "secure_url"}
-        data_cloudinary_filtered = {
-            key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
-        cloudinary_data.append(data_cloudinary_filtered)
-    
 
-    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria,"new_image":cloudinary_data})
+        await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria,"new_image":cloudinary_data})
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu producto se ha actualizado"})
+    
+    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria})
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu producto se ha actualizado"})
+    
 
 async def Delete_products(id_product):
     User_Db = await Connection()

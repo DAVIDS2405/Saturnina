@@ -444,11 +444,11 @@ async def Update_order(id_order,data,transfer_image):
         return False
 
 
-   
-    if not await is_image(transfer_image):
-            await User_Db.close()
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
-                                "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+    if transfer_image:
+        if not await is_image(transfer_image):
+                await User_Db.close()
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                                    "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
 
 
 
@@ -482,6 +482,7 @@ async def Create_comments(data):
     comments_product = await User_Db.select("comments")
     check_user = await User_Db.select(data.user_id)
     check_product = await User_Db.select(data.id_producto)
+    check_order_detail = await User_Db.query("select *, id_orden.* from order_detail where id_orden.user_id = ($id_user)", {"id_user": data.user_id})
 
     if not check_user:
         await User_Db.close()
@@ -491,8 +492,13 @@ async def Create_comments(data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No se encuentra el producto"})
+        
+    for orders in check_order_detail:
+        if orders.get("id_producto") != data.id_producto:
+            await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No has comprado este producto"})
 
-    
     if comments_product is not None:
         for comment in comments_product:
             if (comment.get("user_id") == data.user_id):

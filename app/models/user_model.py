@@ -1,4 +1,3 @@
-from decimal import Decimal
 from enum import Enum
 import json
 import secrets
@@ -263,13 +262,13 @@ class Order_update(BaseModel):
 
 
 class Comment_product(BaseModel):
-    descripcion: str = Field(min_length=10, max_length=40)
+    descripcion: Optional[str] = Field(min_length=10, max_length=100)
     id_producto: str
     calificacion: int = Field(gt=0, le=5) 
     user_id :str
     
     @validator("descripcion")
     def validate_descripcion(cls, value):
-        if len(value) > 10 or len(value) < 40:
+        if len(value) < 10 or len(value) > 100:
             raise ValueError ("El comentario debe de tener entre 20 a 100 caracteres")
         return value

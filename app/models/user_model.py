@@ -214,7 +214,7 @@ class Order(BaseModel):
             raise ValueError("El telefono debe de ser unicamente de 10 digitos")
         return value
 
-    @validator("direccion")
+    @validator("descripcion")
     def validate_direccion(cls,value):
         if len(value) > 20 or len(value) < 50:
             raise ValueError ("El comentario debe de tener entre 20 a 100 caracteres")

@@ -8,6 +8,14 @@ from pydantic import BaseModel, EmailStr, Field, SecretStr, validator
 
 class Email_User(BaseModel):
     email:EmailStr
+
+class Recover_Pass(BaseModel):
+    email:EmailStr
+    token: str = Field(default=None)
+    def generate_token(self):
+        new_token = string.ascii_letters + string.digits
+        new_token = self.token = ''.join(secrets.choice(new_token) for _ in range(36))
+        return new_token
 class User_Recover_Password(BaseModel):
     new_password: SecretStr = Field(min_length=9, max_length=18)
     check_password:SecretStr = Field(min_length=9,max_length=18)
@@ -176,7 +184,7 @@ class Order(BaseModel):
         examples=["La magdalena"], min_length=10, max_length=40)
     email: str = Field(examples=["sebastian2405lucero@hotmail.com"])
     telefono: str = Field(examples=["090095964"], min_length=10, max_length=10)
-    descripcion: Optional[str] = Field(min_length=20, max_length=100,examples=["Me gustaria que fuera de color rojo y el bordado con una letra D"],default="")
+    descripcion: Optional[str] = Field( max_length=100,examples=["Me gustaria que fuera de color rojo y el bordado con una letra D"],default="")
 
     @classmethod
     def __get_validators__(cls):
@@ -216,8 +224,8 @@ class Order(BaseModel):
 
     @validator("descripcion")
     def validate_direccion(cls,value):
-        if len(value) > 20 or len(value) < 50:
-            raise ValueError ("El comentario debe de tener entre 20 a 100 caracteres")
+        if len(value) > 100:
+            raise ValueError ("El comentario debe de tener entre 100 caracteres")
         return value
 
     

@@ -4,7 +4,7 @@ from config.cloudinary_config import Delete_image, Upload_image
 from config.smtp_config import smtp_config
 from database.database import Connection
 from helpers.jwt_helper import decodeJWT, signJWT
-from models.user_model import Comment_product, User_DB, User_Recover_Password
+from models.user_model import Comment_product, Recover_Pass, User_DB, User_Recover_Password
     
 async def Login(data):
     
@@ -134,7 +134,7 @@ async def Recover_Password (data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"Necesita activar su cuenta"})
     
-    new_User = User_DB(**user)
+    new_User = Recover_Pass(**user)
     token = new_User.generate_token()
 
     await User_Db.query('update ($id) merge {"token":($token_new),"confirmEmail":false};' ,{"id":user.get("id"),"token_new":token})
@@ -177,7 +177,8 @@ async def New_password(token,data):
     user = None
     
     check_token = await User_Db.select("user_saturnina")
-    if(new_password != check_new_password):
+
+    if new_password.get_secret_value() != check_new_password.get_secret_value():
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Las password no coinciden"})
     

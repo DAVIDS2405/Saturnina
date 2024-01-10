@@ -16,9 +16,7 @@ async def Upload_image (image_product):
     try:
         upload = cloudinary.uploader.upload(image_product, folder="productos")
         return upload
-    except exceptions.Error as e:
-       
-        # Puedes realizar acciones adicionales o simplemente retornar None u otro valor que indique el fallo.
+    except exceptions.Error:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Hubo un problema con tu imagen intenta de nuevo"})
 
 

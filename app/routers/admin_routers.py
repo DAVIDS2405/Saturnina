@@ -85,7 +85,7 @@ async def Obtener_ordenes(token:Request):
 @router.put("/orders/{id_order_detail}",dependencies=[Depends(JWTBearer())])
 async def Actualizar_orden_status(id_order_detail: str, token: Request, data: Order_update_status = Body(examples=[{
     "status_order": "Rechazado",
-    "descripcion": "Se ha rechazado tu orden ",
+    "descripcion": "Se ha rechazado tu orden",
 }])):
     token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])

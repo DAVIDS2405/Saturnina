@@ -393,7 +393,7 @@ async def Create_order(data, transfer_image):
             
             
     for product in data.products:
-        status_default = {"status": "Pendiente"}
+        status_default = {"status": "Pendiente","descripcion":"se esta verificando tus datos"}
         fecha_actual = datetime.now()
         fecha_actual = str(fecha_actual)
         date_now = {"fecha":fecha_actual}
@@ -477,7 +477,7 @@ async def Create_comments(data):
                             "msg": "No se encuentra el producto"})
         
     for orders in check_order_detail:
-        if orders.get("id_producto") != data.id_producto and orders.get("status") == "Finalizado":
+        if orders.get("id_producto") != data.id_producto and orders.get("status") != "Finalizado":
             await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No has comprado este producto o necesitas esperar a que finalize tu pedido"})

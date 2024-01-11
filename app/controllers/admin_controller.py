@@ -262,7 +262,7 @@ async def Update_order_status(id_orden_detail,data):
         await UserDb.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"No existe este detalle de orden"})
     
-    await UserDb.query('update ($id) merge {"status":($new_status)};', {"id": id_orden_detail, "new_status": data.status_order})
+    await UserDb.query('update ($id) merge {"status":($new_status),"descripcion":($new_description)};', {"id": id_orden_detail, "new_status": data.status_order, "new_description": data.descripcion})
     await UserDb.close()
     raise HTTPException(status_code=status.HTTP_200_OK, detail={
                         "msg": "El estado se actualizo con éxito"})

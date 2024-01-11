@@ -476,11 +476,6 @@ async def Create_comments(data):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No se encuentra el producto"})
         
-    for orders in check_order_detail:
-        if orders.get("id_producto") != data.id_producto and orders.get("status") != "Finalizado":
-            await User_Db.close()
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
-                            "msg": "No has comprado este producto o necesitas esperar a que finalize tu pedido"})
 
     if comments_product is not None:
         for comment in comments_product:
@@ -491,12 +486,18 @@ async def Create_comments(data):
                             "msg": "No puedes realizar mas comentarios de este producto"})
 
             
-        
-    new_comment = Comment_product(**data.dict())
-    await User_Db.create("comments", new_comment)
-    await User_Db.close()
-    raise HTTPException(status_code=status.HTTP_201_CREATED, detail={
+    for orders in check_order_detail:
+        for productos in orders.get("result"):
+            
+            if (productos['id_producto'] == data.id_producto and productos['status'] != "Finalizado") == True:
+                new_comment = Comment_product(**data.dict())
+                await User_Db.create("comments", new_comment)
+                await User_Db.close()
+                raise HTTPException(status_code=status.HTTP_201_CREATED, detail={
                         "msg": "Tu comentario se ha creado"})
+                
+            
+
 
 
 async def Get_comments():

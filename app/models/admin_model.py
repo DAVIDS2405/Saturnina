@@ -6,11 +6,11 @@ from pydantic import BaseModel, Field, validator
 
 
 class Category(BaseModel):
-    name: str = Field(max_length=20, min_length=5)
-    @validator("name")
+    name: str = Field(max_length=30, min_length=5)
+    @validator("name",pre=True)
     def validate_name(cls,value):
-        if len(value) < 5 or len(value) > 20:
-            raise ValueError("La categoría necesita tener entre 5 a 20 caracteres")
+        if len(value) < 5 or len(value) > 30:
+            raise ValueError("La categoría necesita tener entre 5 a 30 caracteres")
         
         return value
 
@@ -63,9 +63,9 @@ class Products(BaseModel):
     descripcion: str = Field(examples=["Repara tu  gorra con lindos bordados"],max_length=50,min_length=5)
     precio: float = Field(examples=[22.22], gt=1, lt=500)
     tallas: Optional[List[tallas_productos]] = [
-        {"name": "S", "status": True}, {"name": "S", "status": True}] or None
+        {"name": "S", "status": True}, {"name": "S", "status": True}] 
     colores: Optional[List[colores_productos]] = [
-        {"name": "verde", "status": True}, {"name": "morado", "status": True}] or None
+        {"name": "verde", "status": True}, {"name": "morado", "status": True}]
     
     
     @validator("nombre_producto", pre=True)

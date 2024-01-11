@@ -239,7 +239,7 @@ async def User_profile_actualizar_contrasenia(password,data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"no se encuentra el Usuario"})
     
-    if(new_password != check_new_password):
+    if (new_password.get_secret_value() != check_new_password.get_secret_value()):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Las password no coinciden"})
     
     if user_update_password is None:

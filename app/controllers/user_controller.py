@@ -479,7 +479,7 @@ async def Create_comments(data):
     for orders in check_order_detail:
         if orders.get("id_producto") != data.id_producto and orders.get("status") != "Finalizado":
             await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No has comprado este producto o necesitas esperar a que finalize tu pedido"})
 
     if comments_product is not None:

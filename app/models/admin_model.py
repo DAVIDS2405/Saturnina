@@ -71,7 +71,7 @@ class Products(BaseModel):
     @validator("nombre_producto", pre=True)
     def validate_nombre_producto(cls, value):
         if len(value) < 5 or len(value) > 25:
-            raise ValueError("El rango permitido es menor a 5 o mayor a 25 caracteres")
+            raise ValueError("El rango permitido es de 5 a 25 caracteres")
         
         return value
     

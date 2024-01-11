@@ -351,7 +351,7 @@ async def Create_order(data, transfer_image):
                         await User_Db.close()
                         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg":"No existe esta talla para alguno de los productos"})
                 if(str(value.color) != "None"):
-                    if (str(value.color) != "None") not in [c.get("name") for c in check_product.get("colores", [])]:
+                    if str(value.color)  not in [c.get("name") for c in check_product.get("colores", [])]:
                         await User_Db.close()
                         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
                                                 "msg": "En algunos de los productos el color esta mal"})

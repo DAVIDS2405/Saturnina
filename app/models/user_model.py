@@ -127,14 +127,14 @@ class User_Update(BaseModel):
     def validate_nombre(cls, value):
         if len(value) < 3 or len(value) > 10:
             raise ValueError(
-                "El rango permitido es menor a 3 o mayor a 10 caracteres")
+                "El rango permitido es de 3  10 caracteres")
 
         return value
 
     @validator("apellido")
     def validate_apellido(cls, value):
         if len(value) < 3 or len(value) > 10:
-            raise ValueError("El rango permitido es menor a 3 o mayor a 10")
+            raise ValueError("El rango permitido es de 3 o mayor a 10")
 
         return value
 
@@ -142,7 +142,7 @@ class User_Update(BaseModel):
     def validate_telefono(cls, value):
         if len(value) != 10:
             raise ValueError(
-                "El telefono debe de ser unicamente de 10 digitos")
+                "El telefono debe de ser unicamente de 10 dígitos")
         return value
 class User_DB (User_Register):
     status: bool = Field(default= True)
@@ -205,27 +205,27 @@ class Order(BaseModel):
     @validator("nombre")
     def validate_nombre(cls, value):
         if len(value) < 3 or len(value) > 10:
-            raise ValueError("El rango permitido es menor a 3 o mayor a 10 caracteres")
+            raise ValueError("El rango permitido es de 3  a 10 caracteres")
         
         return value
     
     @validator("apellido")
     def validate_apellido(cls, value):
         if len(value) < 3 or len(value) > 10:
-            raise ValueError("El rango permitido es menor a 3 o mayor a 10")
+            raise ValueError("El rango permitido es de 3 a 10 caracteres")
         
         return value
 
     @validator("telefono")
     def validate_telefono(cls, value):
         if len(value) != 10:
-            raise ValueError("El telefono debe de ser unicamente de 10 digitos")
+            raise ValueError("El telefono debe de ser unicamente de 10 dígitos")
         return value
 
     @validator("descripcion")
     def validate_direccion(cls,value):
         if len(value) > 100:
-            raise ValueError ("El comentario debe de tener entre 100 caracteres")
+            raise ValueError ("El comentario no puede ser mayor a 100 caracteres")
         return value
 
     
@@ -251,14 +251,14 @@ class Order_update(BaseModel):
     def validate_nombre(cls, value):
         if len(value) < 3 or len(value) > 10:
             raise ValueError(
-                "El rango permitido es menor a 3 o mayor a 10 caracteres")
+                "El rango permitido es de 3 a 10 caracteres")
 
         return value
 
     @validator("apellido")
     def validate_apellido(cls, value):
         if len(value) < 3 or len(value) > 10:
-            raise ValueError("El rango permitido es menor a 3 o mayor a 10")
+            raise ValueError("El rango permitido es de 3 a 10 caracteres")
         return value
     @validator("direccion")
     def validate_direccion(cls, value):

@@ -122,7 +122,7 @@ class User_Update(BaseModel):
     nombre: str = Field(min_length=3, max_length=10)
     apellido: str = Field(min_length=3, max_length=10)
     telefono: str = Field(min_length=10, max_length=10)
-
+    email : EmailStr
     @validator("nombre", pre=True)
     def validate_nombre(cls, value):
         if len(value) < 3 or len(value) > 10:

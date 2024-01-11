@@ -33,6 +33,15 @@ class tallas_productos(BaseModel):
             return cls(**json.loads(value))
         return value
     
+    @validator("name")
+    def validate_tallas_enum(cls, value):
+        tallas_validas = [t.name for t in Tallas]
+        print()
+        for talla in value:
+            if talla['name'] not in tallas_validas:
+                raise ValueError(f"Talla no válida. Las tallas válidas son: {', '.join(tallas_validas)}")
+        return value
+    
 
 class colores_productos(BaseModel):
     name:str
@@ -80,15 +89,6 @@ class Products(BaseModel):
             raise ValueError("El precio debe tener exactamente 2 decimales")
         return value
     
-    @validator("tallas")
-    def validate_tallas_enum(cls, value):
-        tallas_validas = [t.name for t in Tallas]
-        print()
-        for talla in value:
-            if talla['name'] not in tallas_validas:
-                raise ValueError(f"Talla no válida. Las tallas válidas son: {', '.join(tallas_validas)}")
-        return value
-    
     @classmethod
     def __get_validators__(cls):
         yield cls.validate_to_json
@@ -105,7 +105,7 @@ class Products(BaseModel):
 class Estados_orden(str,Enum):
     P = "Pendiente"
     R = "Rechazado"
-    En = "Entregado" 
+    En = "En entrega" 
     F = "Finalizado"
 class Order_update_status(BaseModel):
     status_order: Estados_orden

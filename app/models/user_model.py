@@ -278,5 +278,5 @@ class Comment_product(BaseModel):
     @validator("descripcion")
     def validate_descripcion(cls, value):
         if len(value) < 10 or len(value) > 100:
-            raise ValueError ("El comentario debe de tener entre 20 a 100 caracteres")
+            raise ValueError ("El comentario debe de tener entre 10 a 100 caracteres")
         return value

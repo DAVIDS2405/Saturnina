@@ -411,7 +411,7 @@ async def Create_order(data, transfer_image):
             
             
     for product in data.products:
-        status_default = {"status": "En revision"}
+        status_default = {"status": "Pendiente"}
         fecha_actual = datetime.now()
         fecha_actual = str(fecha_actual)
         date_now = {"fecha":fecha_actual}
@@ -495,10 +495,10 @@ async def Create_comments(data):
                             "msg": "No se encuentra el producto"})
         
     for orders in check_order_detail:
-        if orders.get("id_producto") != data.id_producto:
+        if orders.get("id_producto") != data.id_producto and orders.get("status") == "Finalizado":
             await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
-                            "msg": "No has comprado este producto"})
+                            "msg": "No has comprado este producto o necesitas esperar a que finalize tu pedido"})
 
     if comments_product is not None:
         for comment in comments_product:
@@ -507,6 +507,7 @@ async def Create_comments(data):
                     await User_Db.close()
                     raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No puedes realizar mas comentarios de este producto"})
+
             
         
     new_comment = Comment_product(**data.dict())
@@ -546,8 +547,7 @@ async def Update_comments(data,id_comment):
     User_Db = await Connection()
     check_comment = await User_Db.select(id_comment)
     check_user = await User_Db.select(data.user_id)
-    check_product = await User_Db.select(data.id_producto)
-    
+    check_product = await User_Db.select(data.id_producto) 
     if not check_product:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg":"Este producto no existe"})

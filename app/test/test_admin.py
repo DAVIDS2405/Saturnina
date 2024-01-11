@@ -148,7 +148,6 @@ def test_create_products():
     )
 
     response = client.post("/api/v1/products",headers=header,data=payload,files=files)
-    print(response.json())
     if response.status_code == 202:
         assert "name" in response.json()['detail']
         

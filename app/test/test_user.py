@@ -103,7 +103,6 @@ def test_profile():
     header = {"Authorization": f"Bearer {token}"}
     
     response = client.get("/api/v1/profile",headers=header)
-    print(response)
     assert response.status_code == 202
     assert "nombre" in response.json()['detail']
     assert "apellido" in response.json()['detail']
@@ -188,7 +187,6 @@ def test_update_order():
 
     id_order = "order:8jwi04s9yoec8a0mj7e0"
     response = client.put(f"api/v1/order/{id_order}",headers=header,data=payload,files=files)
-    print(response)
     if response.status_code == 202:
         assert "Tu pedido fue actualizado" in response.json()['detail']['msg']
     

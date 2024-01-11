@@ -36,7 +36,6 @@ class tallas_productos(BaseModel):
     @validator("name")
     def validate_tallas_enum(cls, value):
         tallas_validas = [t.name for t in Tallas]
-        print()
         for talla in value:
             if talla['name'] not in tallas_validas:
                 raise ValueError(f"Talla no válida. Las tallas válidas son: {', '.join(tallas_validas)}")
@@ -119,7 +118,6 @@ class Order_update_status(BaseModel):
     
     @validator("status_order",pre=True)
     def validate_status_order(cls, value):
-        print(value)
         if value not in [estado.value for estado in Estados_orden]:
             raise ValueError(f"Estado de orden no válido. Los estados válidos son: {', '.join(e.value for e in Estados_orden)}")
         return value

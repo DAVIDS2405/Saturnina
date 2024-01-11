@@ -22,5 +22,4 @@ async def Upload_image (image_product):
 
 async def Delete_image (public_id):
     delete =  cloudinary.uploader.destroy(public_id)
-    print(delete)
     return delete

@@ -176,7 +176,7 @@ class Data_product_order(BaseModel):
 
 class Order(BaseModel):
     user_id: str = Field(examples=["user_saturnina:mnr0nnm2kbrjrxor19p4"])
-    price_order: float = Field(gt=1, lt=501, examples=[12.50])
+    price_order: float = Field(gt=1, lt=1000, examples=[12.50])
     products: List[Data_product_order] = [{"id_producto": "product:yzr5f0ydfwwwp9luwj0i", "cantidad": 1, "talla":"Talla x","color": "Amarillo"}, {"id_producto": "product:yzr5f0ydfwwwp9luwj0i", "cantidad": 3}] or []
     nombre: str = Field(examples=["David"], min_length=3, max_length=10)
     apellido: str = Field(examples=["Basantes"], min_length=3, max_length=10)

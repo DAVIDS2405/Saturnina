@@ -325,28 +325,12 @@ async def Create_order(data, transfer_image):
 
         return False
     
-    async def file_image_size(file) -> bool:
-        allowed_size_mb = 5
-        file_size_mb = len(file.file.read()) / \
-            (1024 * 1024)  # Tamaño en megabytes
-        if file_size_mb > allowed_size_mb:
-            return False
-        
-        return True
 
     
     if not await is_image(transfer_image):
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
                                 "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
-            
-    if not await file_image_size(transfer_image):
-            raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail={
-                    "msg": f"La imagen debe ser menor o igual a 5 MB."},
-            )
-        
         
         
     db_products = await User_Db.select("product")
@@ -362,17 +346,15 @@ async def Create_order(data, transfer_image):
         for check_product in db_products:
             if check_product.get("id") == value.id_producto:
                 found = True
-               
-                if str(value.talla) not in [t.get("name") for t in check_product.get("tallas",[])]:
-                    await User_Db.close()
-                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg":"No existe esta talla para alguno de los productos"})
-
-                
-                if  str(value.color) not in [c.get("name") for c in check_product.get("colores",[])]:
-                    await User_Db.close()
-                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
-                                            "msg": "En algunos de los productos el color esta mal"})
-                        
+                if (str(value.talla) != "None"):   
+                    if str(value.talla)  not in [t.get("name") for t in check_product.get("tallas", [])]:
+                        await User_Db.close()
+                        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"msg":"No existe esta talla para alguno de los productos"})
+                if(str(value.color) != "None"):
+                    if (str(value.color) != "None") not in [c.get("name") for c in check_product.get("colores", [])]:
+                        await User_Db.close()
+                        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                                                "msg": "En algunos de los productos el color esta mal"})
         if not found:
             found = False
             break

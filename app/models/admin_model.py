@@ -2,7 +2,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import List, Optional
 import json
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, root_validator, validator
 
 
 class Category(BaseModel):
@@ -43,7 +43,7 @@ class tallas_productos(BaseModel):
     
 
 class colores_productos(BaseModel):
-    name:str
+    name:str = Field(min_length=5, max_length=10)
     status: bool 
 
     @classmethod
@@ -61,12 +61,10 @@ class Products(BaseModel):
     nombre_producto: str = Field(examples=["Reparación de gorras"],max_length= 25, min_length=5)
     id_categoria: str = Field(examples=["category:115pijy2vnwpsioq2iwm"])
     descripcion: str = Field(examples=["Repara tu  gorra con lindos bordados"],max_length=50,min_length=5)
-    precio: float = Field(examples=[22.22], gt=1, lt=500)
-    tallas: Optional[List[tallas_productos]] = [
-        {"name": "S", "status": True}, {"name": "S", "status": True}] 
-    colores: Optional[List[colores_productos]] = [
-        {"name": "verde", "status": True}, {"name": "morado", "status": True}]
-    
+    precio: float = Field(examples=[22.22], gt=1, lt=1000)
+    tallas: Optional[List[tallas_productos]] = None
+    colores: Optional[List[colores_productos]] = None
+
     
     @validator("nombre_producto", pre=True)
     def validate_nombre_producto(cls, value):

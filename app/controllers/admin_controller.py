@@ -111,6 +111,7 @@ async def Get_one_products(id_product):
 async def Create_products(data,imagen_producto):
     id_categoria = data.id_categoria
     nombre_producto = data.nombre_producto
+    print (data)
     async def is_image(file) -> bool:
         allowed_extensions = ["jpg", "jpeg", "png", "webp"]
         file_extension = file.filename.split(".")[-1].lower()

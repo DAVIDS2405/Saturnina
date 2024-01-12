@@ -498,13 +498,18 @@ async def Create_comments(data):
             
     for orders in check_order_detail:
         for productos in orders.get("result"):
-            
-            if (productos['id_producto'] == data.id_producto and productos['status'] != "Finalizado") == True:
+            if (productos['id_producto'] == data.id_producto and productos['status'] == "Finalizado") == True:
                 new_comment = Comment_product(**data.dict())
                 await User_Db.create("comments", new_comment)
                 await User_Db.close()
                 raise HTTPException(status_code=status.HTTP_201_CREATED, detail={
                         "msg": "Tu comentario se ha creado"})
+                
+            elif((productos['id_producto'] == data.id_producto and productos['status'] != "Finalizado") == True):
+                await User_Db.close()
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                        "msg": "Necesitas esperar a que tu compra este en finalizada"})
+                
                 
             
 

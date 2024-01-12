@@ -202,12 +202,12 @@ async def Update_products(id_product,data,imagen_producto):
                 key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
             cloudinary_data.append(data_cloudinary_filtered)
         
-
-        await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image),"colores":($colores_new),"tallas":(new_tallas)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria,"new_image":cloudinary_data,"new_tallas":data.tallas,"colores_new":data.colores})
+        
+        await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image),"colores":($colores_new),"tallas":($new_tallas)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria,"new_image":cloudinary_data,"new_tallas":data.tallas,"colores_new":data.colores})
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu product.o se ha actualizado"})
-    
-    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"colores":($colores_new),"tallas":(new_tallas)};', {"id": id_product, "new_name_product": data.nombre_producto, "new_price": data.precio, "new_descripcion": data.descripcion, "new_category": data.id_categoria,"new_tallas":data.tallas,"colores_new":data.colores})
+    print(data.tallas)
+    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"colores":($colores_new),"tallas":($new_tallas)};', {"id": id_product, "new_name_product": data.nombre_producto, "new_price": data.precio, "new_descripcion": data.descripcion, "new_category": data.id_categoria,"new_tallas":data.tallas,"colores_new":data.colores})
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu producto se ha actualizado"})
     

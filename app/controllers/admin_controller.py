@@ -162,7 +162,6 @@ async def Update_products(id_product,data,imagen_producto):
     User_Db = await Connection()
     category = await User_Db.select(data.id_categoria)
     check_product = await User_Db.select(id_product)
-    check_product_all = await User_Db.select("product")
     async def is_image(file) -> bool:
         allowed_extensions = ["jpg", "jpeg", "png", "webp"]
         file_extension = file.filename.split(".")[-1].lower()
@@ -183,10 +182,7 @@ async def Update_products(id_product,data,imagen_producto):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"Este producto no existe"}) 
     
-    # for producto in check_product_all:
-    #     if producto.get("name") == data.nombre_producto:
-    #         await User_Db.close()
-    #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"Este producto ya existe"})
+    
     if not category:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
@@ -207,11 +203,11 @@ async def Update_products(id_product,data,imagen_producto):
             cloudinary_data.append(data_cloudinary_filtered)
         
 
-        await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image),"colores":($colores_new),"tallas":(new_tallas)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria,"new_image":cloudinary_data,"new_tallas":data.tallas.value,"colores_new":data.colores})
+        await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"imagen":($new_image),"colores":($colores_new),"tallas":(new_tallas)};' ,{"id":id_product, "new_name_product":data.nombre_producto,"new_price":data.precio,"new_descripcion":data.descripcion,"new_category":data.id_categoria,"new_image":cloudinary_data,"new_tallas":data.tallas,"colores_new":data.colores})
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu product.o se ha actualizado"})
     
-    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"colores":($colores_new),"tallas":(new_tallas)};', {"id": id_product, "new_name_product": data.nombre_producto, "new_price": data.precio, "new_descripcion": data.descripcion, "new_category": data.id_categoria,"new_tallas":data.tallas.value,"colores_new":data.colores})
+    await User_Db.query('update ($id) merge {"name":($new_name_product),"precio":($new_price),"descripcion":($new_descripcion),"category":($new_category),"colores":($colores_new),"tallas":(new_tallas)};', {"id": id_product, "new_name_product": data.nombre_producto, "new_price": data.precio, "new_descripcion": data.descripcion, "new_category": data.id_categoria,"new_tallas":data.tallas,"colores_new":data.colores})
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu producto se ha actualizado"})
     

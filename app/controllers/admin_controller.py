@@ -151,7 +151,8 @@ async def Create_products(data,imagen_producto):
  
 
     data_product = {"name": nombre_producto, "category": id_categoria,
-                    "descripcion": data.descripcion, "precio": data.precio, "imagen": cloudinary_data, "tallas": data.tallas.value, "colores":data.colores}
+                    "descripcion": data.descripcion, "precio": data.precio, "imagen": cloudinary_data, "tallas": data.tallas, "colores":data.colores}
+    
     
 
     await User_Db.create("product",data_product)

@@ -103,7 +103,7 @@ async def Eliminar_comentario(token: Request,id_comment:str):
 
 
 @router.delete("/comments-general/{id_comment}", dependencies=[Depends(JWTBearer())])
-async def Eliminar_comentario(token: Request, id_comment: str):
+async def Eliminar_comentario_general(token: Request, id_comment: str):
     token = token.headers.get("authorization").split()
     await Check_rol_admin(token[1])
     response = await Delete_general_comments(id_comment)

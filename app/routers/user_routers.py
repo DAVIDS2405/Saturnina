@@ -1,7 +1,7 @@
 from typing import Annotated, Optional
 from fastapi import APIRouter, Body, Depends, Request, UploadFile, File
 from middlewares.check_admin_user_JWT import Check_rol_user
-from controllers.user_controller import Check_email, Check_token, Create_comments, Create_order, Get_comments, Get_comments_user, Login, New_password, Recover_Password, Register, Update_comments, Update_order, User_detail, User_detail_Update, User_profile, User_profile_actualizar_contrasenia, View_order
+from controllers.user_controller import Check_email, Check_token, Create_comments, Create_comments_general, Create_order, Get_comments, Get_comments_user, Login, New_password, Recover_Password, Register, Update_comments, Update_comments_general, Update_order, User_detail, User_detail_Update, User_profile, User_profile_actualizar_contrasenia, View_order
 from models.user_model import Comment_general, Comment_product, Email_User, Order, Order_update, User_Login, User_Recover_Password, User_Register, User_Update
 from middlewares.Bearer import JWTBearer
 
@@ -168,25 +168,25 @@ async def Actualizar_comentario_producto(id_comment: str, token: Request, data: 
 
 
 @router.post("/comments-general", dependencies=[Depends(JWTBearer())])
-async def Crear_comentario_producto(token: Request, data: Comment_general = Body(examples=[{
+async def Crear_comentario_general(token: Request, data: Comment_general = Body(examples=[{
     "descripcion": "Me gusto mucho la decoración les recomiendo",
     "user_id": "user_saturnina:duarv161uh97q49gus2r",
     "calificacion": 2
 }])):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
-    response = await Create_comments(data)
+    response = await Create_comments_general(data)
     return response
 
 
 @router.put("/comments-general/{id_comment}", dependencies=[Depends(JWTBearer())])
-async def Actualizar_comentario_producto(id_comment: str, token: Request, data: Comment_general = Body(examples=[{
+async def Actualizar_comentario_general(id_comment: str, token: Request, data: Comment_general = Body(examples=[{
     "descripcion": "Me gusto mucho la decoración les recomiendo",
     "user_id": "user_saturnina:duarv161uh97q49gus2r",
     "calificacion": 2
 }])):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
-    response = await Update_comments(data, id_comment)
+    response = await Update_comments_general(data, id_comment)
     return response
 

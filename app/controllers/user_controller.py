@@ -575,6 +575,12 @@ async def Create_comments_general(data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No se encuentra el Usuario"})
+        
+    if not comments:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No hay comentarios"})
+        
 
     if comments is not None:
         for comment in comments:
@@ -596,3 +602,28 @@ async def Create_comments_general(data):
                 await User_Db.close()
                 raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
                     "msg": "Necesitas esperar a que tu compra este en finalizada o comprar algo"})
+                
+
+async def Update_comments_general(data, id_comment):
+    User_Db = await Connection()
+    check_comment = await User_Db.select(id_comment)
+    check_user = await User_Db.select(data.user_id)
+
+    if not check_user:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+                            "msg": "Este usuario no existe"})
+    if not check_comment:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                            "msg": "No se encuentra este comentario"})
+
+    if check_comment.get("user_id") != data.user_id:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+                            "msg": "Este no es tu comentario"})
+
+    await User_Db.update(id_comment, data)
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail={
+                        "msg": "Tu comentario se ha actualizado"})

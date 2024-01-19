@@ -4,7 +4,7 @@ from config.cloudinary_config import Delete_image, Upload_image
 from config.smtp_config import smtp_config
 from database.database import Connection
 from helpers.jwt_helper import decodeJWT, signJWT
-from models.user_model import Comment_product, Recover_Pass, User_DB, User_Recover_Password
+from models.user_model import Comment_general, Comment_product, Recover_Pass, User_DB, User_Recover_Password
     
 async def Login(data):
     
@@ -510,10 +510,6 @@ async def Create_comments(data):
                 raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
                         "msg": "Necesitas esperar a que tu compra este en finalizada"})
                 
-                
-            
-
-
 
 async def Get_comments():
     User_Db = await Connection()
@@ -568,3 +564,35 @@ async def Update_comments(data,id_comment):
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu comentario se ha actualizado"})
 
+
+async def Create_comments_general(data):
+    User_Db = await Connection()
+    comments = await User_Db.select("comments_general")
+    check_user = await User_Db.select(data.user_id)
+    check_order_detail = await User_Db.query("select *, id_orden.* from order_detail where id_orden.user_id = ($id_user)", {"id_user": data.user_id})
+
+    if not check_user:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No se encuentra el Usuario"})
+
+    if comments is not None:
+        for comment in comments:
+            if (comment.get("user_id") == data.user_id):
+                    await User_Db.close()
+                    raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No puedes realizar mas comentarios"})
+
+    for orders in check_order_detail:
+        for productos in orders.get("result"):
+            if ( productos['status'] == "Finalizado") == True:
+                new_comment = Comment_general(**data.dict())
+                await User_Db.create("comments", new_comment)
+                await User_Db.close()
+                raise HTTPException(status_code=status.HTTP_201_CREATED, detail={
+                    "msg": "Tu comentario se ha creado"})
+
+            elif (productos['status'] != "Finalizado") == True:
+                await User_Db.close()
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                    "msg": "Necesitas esperar a que tu compra este en finalizada o comprar algo"})

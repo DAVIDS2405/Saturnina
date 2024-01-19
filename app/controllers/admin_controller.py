@@ -279,3 +279,19 @@ async def Delete_comments(id_coment):
     await User_Db.close()
     raise HTTPException(
         status_code=status.HTTP_202_ACCEPTED, detail={"msg":"Este comentario se ha eliminado"})  
+    
+    
+async def Delete_general_comments(id_coment):
+    User_Db = await Connection()
+
+    check_comment = await User_Db.select(id_coment)
+
+    if not check_comment:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                            "msg": "Este comentario no existe"})
+
+    await User_Db.delete(check_comment.get("id"))
+    await User_Db.close()
+    raise HTTPException(
+        status_code=status.HTTP_202_ACCEPTED, detail={"msg": "Este comentario se ha eliminado"})  

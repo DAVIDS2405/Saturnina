@@ -137,8 +137,8 @@ def test_create_products():
     header = {"Authorization": f"Bearer {token}",
               " Content-Type": "multipart/form-data"}
     image_paths = [
-        "C:/Users/sebas/Downloads/icon-foreground.png",
-        "C:/Users/sebas/Downloads/Splash.png",
+        "C:/Users/sebas/Downloads/leon-melena-arcoiris-ojos-azules.jpg",
+        "C:/Users/sebas/Downloads/leon-melena-arcoiris-ojos-azules.jpg",
     ]
     files = [('imagen_producto', (os.path.basename(path), open(path, 'rb')))
              for path in image_paths]
@@ -173,8 +173,7 @@ def test_put_product():
     header = {"Authorization": f"Bearer {token}",
               " Content-Type": "multipart/form-data"}
     image_paths = [
-        "C:/Users/sebas/Downloads/icon-foreground.png",
-        "C:/Users/sebas/Downloads/Case_1.png",
+        "C:/Users/sebas/Downloads/leon-melena-arcoiris-ojos-azules.jpg",
     ]
     files = [('imagen_producto', (os.path.basename(path), open(path, 'rb')))
              for path in image_paths]
@@ -185,7 +184,7 @@ def test_put_product():
     response = client.put(f"/api/v1/products/{id_product}",headers=header,data=payload,files=files)
     
     if response.status_code == 404:
-        assert "No existe este producto" in response.json()['detail']['msg']
+        assert "Este producto no existe" in response.json()['detail']['msg']
         
     elif response.status_code == 202:
         assert "Tu producto se ha actualizado" in response.json()[

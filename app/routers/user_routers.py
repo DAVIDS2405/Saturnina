@@ -1,7 +1,7 @@
 from typing import Annotated, Optional
 from fastapi import APIRouter, Body, Depends, Request, UploadFile, File
 from middlewares.check_admin_user_JWT import Check_rol_user
-from controllers.user_controller import Check_email, Check_token, Create_comments, Create_comments_general, Create_order, Get_comments, Get_comments_user, Login, New_password, Recover_Password, Register, Update_comments, Update_comments_general, Update_order, User_detail, User_detail_Update, User_profile, User_profile_actualizar_contrasenia, View_order
+from controllers.user_controller import Check_email, Check_token, Create_comments, Create_comments_general, Create_order, Get_comments, Get_comments_general, Get_comments_general_user, Get_comments_user, Login, New_password, Recover_Password, Register, Update_comments, Update_comments_general, Update_order, User_detail, User_detail_Update, User_profile, User_profile_actualizar_contrasenia, View_order
 from models.user_model import Comment_general, Comment_product, Email_User, Order, Order_update, User_Login, User_Recover_Password, User_Register, User_Update
 from middlewares.Bearer import JWTBearer
 
@@ -189,4 +189,19 @@ async def Actualizar_comentario_general(id_comment: str, token: Request, data: C
     await Check_rol_user(token[1])
     response = await Update_comments_general(data, id_comment)
     return response
+
+
+@router.get("/comments-general/{user_id}", dependencies=[Depends(JWTBearer())])
+async def Todos_comentarios_generales_usuario(user_id: str, token: Request):
+    token = token.headers.get("authorization").split()
+    await Check_rol_user(token[1])
+    response = await Get_comments_general_user(user_id)
+    return response
+
+
+@router.get("/comments-general")
+async def Todos_comentarios_generales():
+    response = await Get_comments_general()
+    return response
+
 

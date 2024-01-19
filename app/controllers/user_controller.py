@@ -576,11 +576,6 @@ async def Create_comments_general(data):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No se encuentra el Usuario"})
         
-    if not comments:
-        await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
-                            "msg": "No hay comentarios"})
-        
 
     if comments is not None:
         for comment in comments:
@@ -588,22 +583,24 @@ async def Create_comments_general(data):
                     await User_Db.close()
                     raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
                             "msg": "No puedes realizar mas comentarios"})
-
+                    
+    created_comments = False
     for orders in check_order_detail:
-        for productos in orders.get("result"):
-            if ( productos['status'] == "Finalizado") == True:
+        for comment in orders.get("result"):
+            print(comment)
+            if (comment and comment['status'] == "Finalizado") == True:
                 new_comment = Comment_general(**data.dict())
-                await User_Db.create("comments", new_comment)
+                await User_Db.create("comments_general", new_comment)
                 await User_Db.close()
+                created_comments = True
                 raise HTTPException(status_code=status.HTTP_201_CREATED, detail={
                     "msg": "Tu comentario se ha creado"})
-
-            elif (productos['status'] != "Finalizado") == True:
-                await User_Db.close()
-                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
-                    "msg": "Necesitas esperar a que tu compra este en finalizada o comprar algo"})
                 
 
+    if created_comments == False:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+            "msg": "Necesitas esperar a que tu compra esté finalizada o comprar algo"})
+        
 async def Update_comments_general(data, id_comment):
     User_Db = await Connection()
     check_comment = await User_Db.select(id_comment)

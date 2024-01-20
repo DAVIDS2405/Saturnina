@@ -628,7 +628,7 @@ async def Update_comments_general(data, id_comment):
 async def Get_comments_general():
     User_Db = await Connection()
 
-    comments = await User_Db.query('select user_id.nombre, user_id.apellido,user_id.id,id,id_producto,calificacion,descripcion from comments_general fetch user_saturnina,product')
+    comments = await User_Db.query('select user_id.nombre, user_id.apellido,user_id.id,id,calificacion,descripcion from comments_general fetch user_saturnina,product')
 
     if not comments:
         await User_Db.close()
@@ -640,7 +640,7 @@ async def Get_comments_general():
 
 async def Get_comments_general_user(id_user):
     User_Db = await Connection()
-    comments = await User_Db.query("select user_id.nombre, user_id.apellido,user_id.id,id,id_producto,calificacion,descripcion from comments_general where user_id = ($id_usuario) fetch user_saturnina,product", {"id_usuario": id_user})
+    comments = await User_Db.query("select user_id.nombre, user_id.apellido,user_id.id,id,calificacion,descripcion from comments_general where user_id = ($id_usuario) fetch user_saturnina,product", {"id_usuario": id_user})
 
     if not comments:
         await User_Db.close()

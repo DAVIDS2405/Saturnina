@@ -1,6 +1,9 @@
+from dotenv import load_dotenv
 from surrealdb import Surreal
 from fastapi import HTTPException
-import os 
+import os
+
+load_dotenv()
 
 url_db = os.getenv("URL_DB")
 username_db = os.getenv("USER_DB")
@@ -18,4 +21,4 @@ async def Connection():
     except Exception as e:
         print("Ocurrió un error con surreal:", str(e))
         await conn.close(),
-        raise ( HTTPException(status_code= 502,detail={"error":str(e)}))
+        raise HTTPException(status_code= 502,detail={"error":str(e)})

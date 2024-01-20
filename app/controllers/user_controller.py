@@ -3,14 +3,15 @@ from fastapi import HTTPException,status
 from config.cloudinary_config import Delete_image, Upload_image
 from config.smtp_config import smtp_config
 from database.database import Connection
-from helpers.jwt_helper import signJWT
-from models.user_model import User_DB, User_Recover_Password, Order
+from helpers.jwt_helper import decodeJWT, signJWT
+from models.user_model import Comment_general, Comment_product, Recover_Pass, User_DB, User_Recover_Password
     
 async def Login(data):
     
     email = data.email
     password = data.password
     
+        
     user = None
     User_Db = await Connection()
     Check_user = await User_Db.select("user_saturnina")
@@ -33,9 +34,9 @@ async def Login(data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg": "Necesitas activar tu cuenta revisa tu correo para confirmar"})
     
-    data_user_keys = {"nombre", "apellido", "telefono", "dirrecion", "id", "email", "token"}
+    data_user_keys = {"nombre", "apellido", "telefono", "dirrecion", "id", "email", "token","rol"}
     data_user_filtered = {key: user[key] for key in data_user_keys if key in user}
-    data_user_filtered['token'] = signJWT(data_user_filtered['id']) 
+    data_user_filtered['token'] = signJWT(data_user_filtered['id'],user.get("rol")) 
     
     check_password = User_DB.verify_password(plain_password=password,password_bd=user.get("password"))
     
@@ -133,7 +134,7 @@ async def Recover_Password (data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"msg":"Necesita activar su cuenta"})
     
-    new_User = User_DB(**user)
+    new_User = Recover_Pass(**user)
     token = new_User.generate_token()
 
     await User_Db.query('update ($id) merge {"token":($token_new),"confirmEmail":false};' ,{"id":user.get("id"),"token_new":token})
@@ -176,7 +177,9 @@ async def New_password(token,data):
     user = None
     
     check_token = await User_Db.select("user_saturnina")
-    if(new_password != check_new_password):
+
+    if new_password.get_secret_value() != check_new_password.get_secret_value():
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Las password no coinciden"})
     
     for user in check_token:
@@ -210,14 +213,25 @@ async def New_password(token,data):
 
 
 async def User_profile(data):
-    data = data[1]
-    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=data)
+    UserDb = await Connection()
+    decode_token = await decodeJWT(data)
+    check_user_db = await UserDb.select(decode_token.get("user_id"))
+
+    if not check_user_db:
+        await UserDb.close()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={
+                            "msg": "El usuario no existe"})
+    
+    data_user_keys = {"nombre", "apellido", "telefono", "email"}
+    data_user_filtered = {key: check_user_db[key] for key in data_user_keys if key in check_user_db}
+    await UserDb.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=data_user_filtered)
 
 async def User_profile_actualizar_contrasenia(password,data):
-    data = data[1]
+    decode_token = await decodeJWT(data)
     new_password = password.new_password
     check_new_password = password.check_password
-    id_user = data.get('id')
+    id_user = decode_token.get('user_id')
     User_Db = await Connection()
     user_update_password = await User_Db.select(id_user)
     
@@ -225,7 +239,7 @@ async def User_profile_actualizar_contrasenia(password,data):
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={"msg":"no se encuentra el Usuario"})
     
-    if(new_password != check_new_password):
+    if (new_password.get_secret_value() != check_new_password.get_secret_value()):
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Las password no coinciden"})
     
     if user_update_password is None:
@@ -290,13 +304,12 @@ async def View_order(id_user):
     
     all_orders = await User_Db.query("select *, id_producto.*,id_orden.* from order_detail where id_orden.user_id = ($id_user) fetch product, order;", {"id_user": id_user})
     
-
     if not all_orders[0]['result'] :
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"No tienes ningún pedido"})
     
     await User_Db.close()
-    raise HTTPException(status_code=status.HTTP_302_FOUND,detail=all_orders)
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail=all_orders)
 
 async def Create_order(data, transfer_image):
     
@@ -311,18 +324,47 @@ async def Create_order(data, transfer_image):
             return True
 
         return False
+    
 
+    
     if not await is_image(transfer_image):
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
-                            "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+            await User_Db.close()
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                                "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+        
         
     db_products = await User_Db.select("product")
+
+    if not db_products:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                            "msg": "No existe este producto"})
+        
+    
     for value in data.products: 
         found = False
         for check_product in db_products:
             if check_product.get("id") == value.id_producto:
                 found = True
-                break
+                
+                if str(value.talla) != "None":
+                    if not check_product.get("tallas"):
+                        await User_Db.close()
+                        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                                            "msg": f"No existe ninguna talla para este producto {check_product.get('name')}"})
+                    if str(value.talla.value) not in [t.get("name") for t in check_product.get("tallas", [])]:
+                        await User_Db.close()
+                        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                                            "msg": f"No existe esta talla para el producto {check_product.get('name')}"})
+                if str(value.color) != "None":
+                    if not check_product.get("colores"):
+                        await User_Db.close()
+                        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                            "msg": f"No hay ningún color asignado a este producto {check_product.get('name')}"})
+                    if str(value.color)  not in [c.get("name") for c in check_product.get("colores", [])]:
+                        await User_Db.close()
+                        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={
+                            "msg": f"En el  productos {check_product.get('name')} el color esta mal"})
         if not found:
             found = False
             break
@@ -361,7 +403,7 @@ async def Create_order(data, transfer_image):
             
             
     for product in data.products:
-        status_default = {"status": "En revision"}
+        status_default = {"status": "Pendiente","descripcion":"se esta verificando tus datos"}
         fecha_actual = datetime.now()
         fecha_actual = str(fecha_actual)
         date_now = {"fecha":fecha_actual}
@@ -382,6 +424,8 @@ async def Create_order(data, transfer_image):
 
 async def Update_order(id_order,data,transfer_image):
     User_Db = await Connection()
+    fecha_actual = datetime.now()
+    fecha_actual = str(fecha_actual)
     
     async def is_image(file) -> bool:
         allowed_extensions = ["jpg", "jpeg", "png", "webp"]
@@ -392,28 +436,216 @@ async def Update_order(id_order,data,transfer_image):
 
         return False
 
-    if not await is_image(transfer_image):
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
-                            "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
-        
+
+    if transfer_image:
+        if not await is_image(transfer_image):
+                await User_Db.close()
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                                    "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+
+
 
     
     check_order = await User_Db.select(id_order)
     
     if not check_order:
+        await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"el id de la orden es incorrecto"})
     
-    await Delete_image(check_order.get("image_transaccion").get("public_id"))
-    upload_cloudinary = await Upload_image(transfer_image.file)
-    cloudinary_key = {"public_id", "secure_url"}
-    data_cloudinary_filtered = {
-        key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
-    
-    fecha_actual = datetime.now()
-    fecha_actual = str(fecha_actual)
-    
-    await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"image_transaccion":($new_image),"order_date":($new_date),"email":($new_email)};', {"id":check_order.get("id"),"new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email":data.email, "new_image": data_cloudinary_filtered,"new_date":fecha_actual})
-    
+    if transfer_image:
+        await Delete_image(check_order.get("image_transaccion").get("public_id"))
+        upload_cloudinary = await Upload_image(transfer_image.file)
+        cloudinary_key = {"public_id", "secure_url"}
+        data_cloudinary_filtered = {
+            key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
+        await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"image_transaccion":($new_image),"order_date":($new_date),"email":($new_email)};', {"id": check_order.get("id"), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_image": data_cloudinary_filtered, "new_date": fecha_actual})
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail={
+                        "msg": "Tu pedido fue actualizado"})
+        
+    await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"order_date":($new_date),"email":($new_email)};', {"id": check_order.get("id"), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_date": fecha_actual})
+
 
     await User_Db.close()
     raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu pedido fue actualizado"})
+
+
+async def Create_comments(data):
+    User_Db = await Connection()
+    comments_product = await User_Db.select("comments")
+    check_user = await User_Db.select(data.user_id)
+    check_product = await User_Db.select(data.id_producto)
+    check_order_detail = await User_Db.query("select *, id_orden.* from order_detail where id_orden.user_id = ($id_user)", {"id_user": data.user_id})
+
+    if not check_user:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No se encuentra el Usuario"})
+    if not check_product:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No se encuentra el producto"})
+        
+
+    if comments_product is not None:
+        for comment in comments_product:
+            if (comment.get("user_id") == data.user_id):
+                if(comment.get("id_producto") == data.id_producto):
+                    await User_Db.close()
+                    raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No puedes realizar mas comentarios de este producto"})
+
+            
+    for orders in check_order_detail:
+        for productos in orders.get("result"):
+            if (productos['id_producto'] == data.id_producto and productos['status'] == "Finalizado") == True:
+                new_comment = Comment_product(**data.dict())
+                await User_Db.create("comments", new_comment)
+                await User_Db.close()
+                raise HTTPException(status_code=status.HTTP_201_CREATED, detail={
+                        "msg": "Tu comentario se ha creado"})
+                
+            elif((productos['id_producto'] == data.id_producto and productos['status'] != "Finalizado") == True):
+                await User_Db.close()
+                raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+                        "msg": "Necesitas esperar a que tu compra este en finalizada"})
+                
+
+async def Get_comments():
+    User_Db = await Connection()
+    
+    comments = await User_Db.query('select user_id.nombre, user_id.apellido,user_id.id,id,id_producto,calificacion,descripcion from comments fetch user_saturnina,product')
+    
+    if not comments:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No hay comentarios"})
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)
+
+
+async def Get_comments_user(id_user):
+    User_Db = await Connection()
+    comments = await User_Db.query("select user_id.nombre, user_id.apellido,user_id.id,id,id_producto,calificacion,descripcion from comments where user_id = ($id_usuario) fetch user_saturnina,product", {"id_usuario": id_user})
+
+    if not comments:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No hay comentarios"})
+    
+ 
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)
+
+async def Update_comments(data,id_comment):
+    User_Db = await Connection()
+    check_comment = await User_Db.select(id_comment)
+    check_user = await User_Db.select(data.user_id)
+    check_product = await User_Db.select(data.id_producto) 
+    if not check_product:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg":"Este producto no existe"})
+
+    if not check_user:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg":"Este usuario no existe"})
+    if not check_comment:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail={"msg":"No se encuentra este comentario"})
+    
+    if check_comment.get("user_id") != data.user_id:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg":"Este no es tu comentario"})    
+    if check_comment.get('id_producto') != data.id_producto:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"msg":"Este producto no le corresponde a este comentario"})    
+    
+    await User_Db.update(id_comment,data)
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED,detail={"msg":"Tu comentario se ha actualizado"})
+
+
+async def Create_comments_general(data):
+    User_Db = await Connection()
+    comments = await User_Db.select("comments_general")
+    check_user = await User_Db.select(data.user_id)
+    check_order_detail = await User_Db.query("select *, id_orden.* from order_detail where id_orden.user_id = ($id_user)", {"id_user": data.user_id})
+
+    if not check_user:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No se encuentra el Usuario"})
+        
+
+    if comments is not None:
+        for comment in comments:
+            if (comment.get("user_id") == data.user_id):
+                    await User_Db.close()
+                    raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No puedes realizar mas comentarios"})
+                    
+    created_comments = False
+    for orders in check_order_detail:
+        for comment in orders.get("result"):
+            print(comment)
+            if (comment and comment['status'] == "Finalizado") == True:
+                new_comment = Comment_general(**data.dict())
+                await User_Db.create("comments_general", new_comment)
+                await User_Db.close()
+                created_comments = True
+                raise HTTPException(status_code=status.HTTP_201_CREATED, detail={
+                    "msg": "Tu comentario se ha creado"})
+                
+
+    if created_comments == False:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
+            "msg": "Necesitas esperar a que tu compra esté finalizada o comprar algo"})
+        
+async def Update_comments_general(data, id_comment):
+    User_Db = await Connection()
+    check_comment = await User_Db.select(id_comment)
+    check_user = await User_Db.select(data.user_id)
+
+    if not check_user:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+                            "msg": "Este usuario no existe"})
+    if not check_comment:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
+                            "msg": "No se encuentra este comentario"})
+
+    if check_comment.get("user_id") != data.user_id:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={
+                            "msg": "Este no es tu comentario"})
+
+    await User_Db.update(id_comment, data)
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail={
+                        "msg": "Tu comentario se ha actualizado"})
+
+async def Get_comments_general():
+    User_Db = await Connection()
+
+    comments = await User_Db.query('select user_id.nombre, user_id.apellido,user_id.id,id,calificacion,descripcion from comments_general fetch user_saturnina,product')
+
+    if not comments:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No hay comentarios"})
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)
+
+
+async def Get_comments_general_user(id_user):
+    User_Db = await Connection()
+    comments = await User_Db.query("select user_id.nombre, user_id.apellido,user_id.id,id,calificacion,descripcion from comments_general where user_id = ($id_usuario) fetch user_saturnina,product", {"id_usuario": id_user})
+
+    if not comments:
+        await User_Db.close()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={
+                            "msg": "No hay comentarios"})
+
+    await User_Db.close()
+    raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail=comments)

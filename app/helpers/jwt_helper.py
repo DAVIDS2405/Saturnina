@@ -9,18 +9,13 @@ JWT_SECRET = os.getenv("SECRET_KEY")
 JWT_ALGORITHM = os.getenv("ALGORITHM")
 
 
-async def Search_User(id):
-    User_Db = await Connection()
-    user = await User_Db.select(id)
-    data_user_keys = {"nombre", "apellido", "telefono", "direccion", "id", "email","rol"}
-    data_user_filtered = {key: user[key] for key in data_user_keys if key in user}
-    await User_Db.close()
-    return data_user_filtered
+
 
 # function used for signing the JWT string
-def signJWT(user_id: str) -> Dict[str, str]:
+def signJWT(user_id: str,user_rol:str) -> Dict[str, str]:
     payload = {
         "user_id": user_id,
+        "rol":user_rol,
         "expires": time.time() + 1800
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
@@ -31,8 +26,8 @@ def signJWT(user_id: str) -> Dict[str, str]:
 async def decodeJWT(token: str) -> dict:
     try:
         decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        id = decoded_token['user_id']
-        user = await Search_User(id)
-        return (decoded_token,user) if decoded_token["expires"] >= time.time() else None
+
+
+        return (decoded_token) if decoded_token["expires"] >= time.time() else None
     except:
         return {}

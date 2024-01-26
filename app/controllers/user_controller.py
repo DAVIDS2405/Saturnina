@@ -446,7 +446,7 @@ async def Update_order(id_order,data,transfer_image):
 
 
     
-    check_order = await User_Db.select(id_order)
+    check_order = await User_Db.query("select * from order where id = ($id_order_db)",{"id_order_db":id_order})
     
     if not check_order:
         await User_Db.close()

@@ -451,19 +451,20 @@ async def Update_order(id_order,data,transfer_image):
     if not check_order:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"el id de la orden es incorrecto"})
-    
+    print(check_order[0].get('result')[0])
     if transfer_image:
-        await Delete_image(check_order[0].get("image_transaccion").get("public_id"))
+        
+        await Delete_image(check_order[0].get('result')[0].get("image_transaccion").get("public_id"))
         upload_cloudinary = await Upload_image(transfer_image.file)
         cloudinary_key = {"public_id", "secure_url"}
         data_cloudinary_filtered = {
             key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
-        await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"image_transaccion":($new_image),"order_date":($new_date),"email":($new_email)};', {"id": check_order[0].get('id'), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_image": data_cloudinary_filtered, "new_date": fecha_actual})
+        await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"image_transaccion":($new_image),"order_date":($new_date),"email":($new_email)};', {"id": check_order[0].get('result')[0].get('id'), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_image": data_cloudinary_filtered, "new_date": fecha_actual})
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail={
                         "msg": "Tu pedido fue actualizado"})
 
-    await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"order_date":($new_date),"email":($new_email)};', {"id": check_order[0].get('id'), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_date": fecha_actual})
+    await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"order_date":($new_date),"email":($new_email)};', {"id": check_order[0].get('result')[0].get('id'), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_date": fecha_actual})
 
 
     await User_Db.close()

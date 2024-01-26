@@ -89,7 +89,7 @@ body {{
     </div>
     <p>Hola,</p>
     <p>¡Gracias por registrarte! Para activar tu cuenta, por favor haz clic en el enlace de abajo:</p>
-    <a class="activation-link" href="https://{url_service}/api/v1/check-email/{token}">Activar Cuenta</a>
+    <a class="activation-link" href="https://{url_service}/check-email/{token}">Activar Cuenta</a>
     <div class="footer">
         <p>Atentamente,</p>
         <p>Tu Equipo de Soporte de Saturnina</p>
@@ -184,7 +184,7 @@ body {{
     </div>
     <p>Hola,</p>
     <p>Has solicitado la recuperación de tu contraseña. Para restablecer tu contraseña, por favor haz clic en el enlace de abajo:</p>
-    <a class="recovery-link" href="http://{url_service}/api/v1/recover-password/{token}">Recuperar Contraseña</a>
+    <a class="recovery-link" href="http://{url_service}/cambiar-contrasena/{token}">Recuperar Contraseña</a>
     <div class="footer">
         <p>Atentamente,</p>
         <p>Tu Equipo de Soporte de Saturnina</p>

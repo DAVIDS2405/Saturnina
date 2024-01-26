@@ -458,12 +458,12 @@ async def Update_order(id_order,data,transfer_image):
         cloudinary_key = {"public_id", "secure_url"}
         data_cloudinary_filtered = {
             key: upload_cloudinary[key] for key in cloudinary_key if key in upload_cloudinary}
-        await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"image_transaccion":($new_image),"order_date":($new_date),"email":($new_email)};', {"id": check_order.get("id"), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_image": data_cloudinary_filtered, "new_date": fecha_actual})
+        await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"image_transaccion":($new_image),"order_date":($new_date),"email":($new_email)};', {"id": check_order[0].get('id'), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_image": data_cloudinary_filtered, "new_date": fecha_actual})
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail={
                         "msg": "Tu pedido fue actualizado"})
-        
-    await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"order_date":($new_date),"email":($new_email)};', {"id": check_order.get("id"), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_date": fecha_actual})
+
+    await User_Db.query('update ($id) merge {"apellido":($new_apellido),"nombre":($new_name),"telefono":($new_phone),"direccion":($new_address),"order_date":($new_date),"email":($new_email)};', {"id": check_order[0].get('id'), "new_apellido": data.apellido, "new_name": data.nombre, "new_phone": data.telefono, "new_address": data.direccion, "new_email": data.email, "new_date": fecha_actual})
 
 
     await User_Db.close()
@@ -587,7 +587,6 @@ async def Create_comments_general(data):
     created_comments = False
     for orders in check_order_detail:
         for comment in orders.get("result"):
-            print(comment)
             if (comment and comment['status'] == "Finalizado") == True:
                 new_comment = Comment_general(**data.dict())
                 await User_Db.create("comments_general", new_comment)

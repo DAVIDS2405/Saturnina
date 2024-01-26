@@ -89,7 +89,7 @@ body {{
     </div>
     <p>Hola,</p>
     <p>¡Gracias por registrarte! Para activar tu cuenta, por favor haz clic en el enlace de abajo:</p>
-    <a class="activation-link" href="https://{url_service}/check-email/{token}">Activar Cuenta</a>
+    <a class="activation-link" href="https://{url_service}/confirmar/{token}">Activar Cuenta</a>
     <div class="footer">
         <p>Atentamente,</p>
         <p>Tu Equipo de Soporte de Saturnina</p>

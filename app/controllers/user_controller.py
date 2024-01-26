@@ -453,7 +453,7 @@ async def Update_order(id_order,data,transfer_image):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"el id de la orden es incorrecto"})
     
     if transfer_image:
-        await Delete_image(check_order.get("image_transaccion").get("public_id"))
+        await Delete_image(check_order[0].get("image_transaccion").get("public_id"))
         upload_cloudinary = await Upload_image(transfer_image.file)
         cloudinary_key = {"public_id", "secure_url"}
         data_cloudinary_filtered = {

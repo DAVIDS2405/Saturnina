@@ -443,9 +443,6 @@ async def Update_order(id_order,data,transfer_image):
                 raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
                                     "msg": "Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
 
-
-
-    
     check_order = await User_Db.query("select * from order where id = ($id_order_db)",{"id_order_db":id_order})
     
     if not check_order:

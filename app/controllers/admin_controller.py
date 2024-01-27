@@ -111,6 +111,7 @@ async def Get_one_products(id_product):
 async def Create_products(data,imagen_producto):
     id_categoria = data.id_categoria
     nombre_producto = data.nombre_producto
+    
     async def is_image(file) -> bool:
         allowed_extensions = ["jpg", "jpeg", "png", "webp"]
         file_extension = file.filename.split(".")[-1].lower()
@@ -124,11 +125,11 @@ async def Create_products(data,imagen_producto):
     User_Db = await Connection()
     products_list = await User_Db.select("product")
     category = await User_Db.select(id_categoria)
+    
     for imagen in imagen_producto:
         if not await is_image(imagen):
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos "})
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,detail={"msg":"Unicamente las extensiones de tipo jpg, jpeg, png y webp están permitidos, si tu error no es ese revisa tu formato puede que este dañado  "})
         
-
     
     if not category:
         await User_Db.close()
@@ -141,6 +142,7 @@ async def Create_products(data,imagen_producto):
             await User_Db.close()
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"msg":"Este producto ya existe"})
     cloudinary_data = []
+    
     for imagen in imagen_producto:
         upload_cloudinary = await Upload_image(imagen.file)
         cloudinary_key = {"public_id", "secure_url"}

@@ -448,6 +448,7 @@ async def Update_order(id_order,data,transfer_image):
     if not check_order:
         await User_Db.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={"msg":"el id de la orden es incorrecto"})
+    
     print(check_order[0].get('result')[0])
     if transfer_image:
         
@@ -495,7 +496,10 @@ async def Create_comments(data):
 
             
     for orders in check_order_detail:
+        if not orders.get('result'):
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail={'msg':"No tienes ningún pedido realizado"})
         for productos in orders.get("result"):
+            
             if (productos['id_producto'] == data.id_producto and productos['status'] == "Finalizado") == True:
                 new_comment = Comment_product(**data.dict())
                 await User_Db.create("comments", new_comment)
@@ -507,8 +511,9 @@ async def Create_comments(data):
                 await User_Db.close()
                 raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail={
                         "msg": "Necesitas esperar a que tu compra este en finalizada"})
-                
-
+            elif (productos['id_producto'] != data.id_producto):
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail={'msg':"Revisa tus datos este producto no se encuentra en tu lista de pedidos"})
+            
 async def Get_comments():
     User_Db = await Connection()
     

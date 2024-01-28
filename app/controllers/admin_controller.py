@@ -224,13 +224,13 @@ async def Delete_products(id_product):
     check = True
 
     for product in check_pedidos:
-        if product.get("status") != "Cancelado" and product.get("id_producto") == id_product:
+        if product.get("status") != "Finalizado" and product.get("id_producto") == id_product:
             check = False
             break
         
     if check == False:
         await User_Db.close()
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail={"msg":"necesitas primero poner en 'Cancelado' todas los pedidos que contengan este producto"})
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail={"msg":"necesitas primero poner en 'Finalizado' todas los pedidos que contengan este producto"})
     
     for imagen in check_product.get("imagen"):
             await Delete_image(imagen.get("public_id"))

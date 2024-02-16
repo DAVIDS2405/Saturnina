@@ -103,6 +103,12 @@ async def Actualizar_Perfil(id: str, token: Request, data: User_Update = Body(ex
     return response
 
 
+@router.delete("/user/{id}", dependencies=[Depends(JWTBearer())])
+async def Eliminar_Cuenta(id:str,token:Request):
+    token = token.headers.get("authorization").split()
+    await Check_rol_user(token[1])
+    return "Correo Eliminado"
+    
 @router.get("/order/{id_user}", dependencies=[Depends(JWTBearer())])
 async def Buscar_pedido(id_user: str, token: Request):
     token = token.headers.get("authorization").split()

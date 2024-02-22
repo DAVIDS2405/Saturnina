@@ -61,12 +61,6 @@ class User_Login(BaseModel):
         if value is None:
             raise ValueError("Ingresa un correo")
         return value
-
-    @validator("password", pre=True)
-    def check_email(cls, value):
-        if value is None:
-            raise ValueError("Ingrese una contraseña")
-        return value
             
     
 class User_Register(BaseModel):

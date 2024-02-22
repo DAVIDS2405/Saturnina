@@ -61,6 +61,12 @@ class User_Login(BaseModel):
         if value is None:
             raise ValueError("Ingresa un correo")
         return value
+
+    @validator("password", pre=True)
+    def check_email(cls, value):
+        if value is None:
+            raise ValueError("Ingrese una contraseña")
+        return value
             
     
 class User_Register(BaseModel):
@@ -86,8 +92,9 @@ class User_Register(BaseModel):
 
     @validator("telefono")
     def validate_telefono(cls, value):
-        if len(value) != 10:
-            raise ValueError("El telefono debe de ser unicamente de 10 digitos")
+        if not value.isdigit() or len(value) != 10:
+            raise ValueError(
+                "El telefono debe ser unicamente de 10 dígitos y contener solo números")
         return value
     
     @validator("password")
@@ -140,9 +147,9 @@ class User_Update(BaseModel):
 
     @validator("telefono")
     def validate_telefono(cls, value):
-        if len(value) != 10:
+        if not value.isdigit() or len(value) != 10:
             raise ValueError(
-                "El telefono debe de ser unicamente de 10 dígitos")
+                "El telefono debe ser unicamente de 10 dígitos y contener solo números")
         return value
 class User_DB (User_Register):
     status: bool = Field(default= True)
@@ -218,8 +225,9 @@ class Order(BaseModel):
 
     @validator("telefono")
     def validate_telefono(cls, value):
-        if len(value) != 10:
-            raise ValueError("El telefono debe de ser unicamente de 10 dígitos")
+        if not value.isdigit() or len(value) != 10:
+            raise ValueError(
+                "El telefono debe ser unicamente de 10 dígitos y contener solo números")
         return value
 
     @validator("descripcion")
@@ -266,7 +274,13 @@ class Order_update(BaseModel):
             raise ValueError(
                 "La direccion debe de tener entre 5 a 100 caracteres")
         return value
-
+    
+    @validator("telefono")
+    def validate_telefono(cls, value):
+        if not value.isdigit() or len(value) != 10:
+            raise ValueError(
+                "El telefono debe ser unicamente de 10 dígitos y contener solo números")
+        return value
 
 
 class Comment_product(BaseModel):

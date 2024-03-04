@@ -1,4 +1,3 @@
-Absolutely, here's the updated README with the link to your project:
 
 # Project Introduction
 

@@ -1,4 +1,4 @@
-Sure, here's an improved version of the README in English:
+Absolutely, here's the updated README with the link to your project:
 
 # Project Introduction
 
@@ -16,6 +16,8 @@ FastAPI is a modern web framework for building APIs with Python, and SurrealDB i
 This project aims to provide a powerful backend solution for Saturnina, an online clothing customization store. The mobile and frontend aspects of the project have been developed by **Jose Pinos** and **Miguel Carapaz**.
 
 You can find Saturnina on [Instagram](https://www.instagram.com/saturnina.uio/?hl=es-la), where they showcase their unique and customizable clothing items.
+
+The associated documents for this project can be found [here](https://epnecuador-my.sharepoint.com/:f:/g/personal/david_basantes_epn_edu_ec/EgPV6eg1rOdKqVYQ8ln20rcBteRBnvtw7ZTBj4ofBG6OGg?e=tZZtJK).
 
 To run this project, you'll need Python 3.11 or later. Follow these steps:
 

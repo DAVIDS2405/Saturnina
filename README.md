@@ -17,6 +17,7 @@ This project aims to provide a powerful backend solution for Saturnina, an onlin
 You can find Saturnina on [Instagram](https://www.instagram.com/saturnina.uio/?hl=es-la), where they showcase their unique and customizable clothing items.
 
 The associated documents for this project can be found [here](https://epnecuador-my.sharepoint.com/:f:/g/personal/david_basantes_epn_edu_ec/EgPV6eg1rOdKqVYQ8ln20rcBteRBnvtw7ZTBj4ofBG6OGg?e=tZZtJK).
+
 The associated user manual for this ptoject can be found [here](https://youtu.be/nBuVLAy6JE8?si=FF3iueBKGqBYKOZH)
 
 To run this project, you'll need Python 3.11 or later. Follow these steps:

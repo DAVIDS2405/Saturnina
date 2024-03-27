@@ -64,7 +64,6 @@ async def Register(data):
     for user in Check_email:
         if (user["email"] == email):
             user = user
-            await User_Db.close()
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={
                                 "msg": "Este email ya se encuentra en uso"})
 
@@ -73,7 +72,7 @@ async def Register(data):
 
     token = new_User.generate_token()
 
-    new_User = new_User.dict()
+    new_User = new_User.model_dump()
     new_User['password'] = new_User['password'].decode("utf-8")
 
     id_user = await User_Db.create("user_saturnina", new_User)
@@ -83,7 +82,6 @@ async def Register(data):
             break
 
     await User_Db.query('update ($id) merge {"rol":rol:vuqn7k4vw0m1a3wt7fkb};', {"id": id_user_database.get("id")})
-    await User_Db.close()
 
     email_sender = smtp_config()
     email_sender.send_user(user_mail=email, token=token)

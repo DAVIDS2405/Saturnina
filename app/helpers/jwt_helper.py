@@ -1,33 +1,44 @@
-# This file is responsible for signing , encoding , decoding and returning JWTS
-import time
-from typing import Dict
+from dotenv import load_dotenv
+from http.client import HTTPException
 import os
-import jwt
-from database.database import Connection
+from jose import jwt, JWTError, ExpiredSignatureError
+from datetime import datetime, timedelta, UTC
+
+load_dotenv()
 
 JWT_SECRET = os.getenv("SECRET_KEY")
 JWT_ALGORITHM = os.getenv("ALGORITHM")
 
 
-
-
-# function used for signing the JWT string
-def signJWT(user_id: str,user_rol:str) -> Dict[str, str]:
+def signJWT(user_id: str, user_rol: str):
     payload = {
         "user_id": user_id,
-        "rol":user_rol,
-        "expires": time.time() + 1800
+        "rol": user_rol,
+        "exp": datetime.now(UTC) + timedelta(minutes=30)
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
     return token
 
 
-async def decodeJWT(token: str) -> dict:
+async def decodeJWT(token: str):
     try:
-        decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
 
+        return payload
 
-        return (decoded_token) if decoded_token["expires"] >= time.time() else None
-    except:
-        return {}
+    except ExpiredSignatureError:
+
+        raise HTTPException(
+            status_code=401,
+            detail="El Token ha expirado.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    except JWTError:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Token inválido.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )

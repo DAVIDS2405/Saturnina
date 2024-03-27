@@ -1,24 +1,30 @@
 from dotenv import load_dotenv
-from surrealdb import Surreal
-from fastapi import HTTPException
+from surrealdb import Surreal, SurrealHTTP
 import os
 
 load_dotenv()
 
-url_db = os.getenv("URL_DB")
-username_db = os.getenv("USER_DB")
-password_db = os.getenv("PASSWORD_DB")
-namespace_db = os.getenv("NAMESPACE_DB")
-database_db = os.getenv("DATABASE_DB")
+url_db = os.environ.get("URL_DB")
+username_db = os.environ.get("USER_DB")
+password_db = os.environ.get("PASSWORD_DB")
+namespace_db = os.environ.get("NAMESPACE_DB")
+database_db = os.environ.get("DATABASE_DB")
+
 
 async def Connection():
     try:
-        conn = Surreal()
-        await conn.connect(f"{url_db}")
-        await conn.signin({"user": f"{username_db}", "pass": f"{password_db}"})
-        await conn.use(f"{namespace_db}", f"{database_db}")
+        conn = SurrealHTTP(
+            url_db,
+            namespace_db,
+            database_db,
+            username_db,
+            password_db
+        )
+
         return conn
+
     except Exception as e:
-        print("Ocurrió un error con surreal:", str(e))
-        await conn.close(),
-        raise HTTPException(status_code= 502,detail={"error":str(e)})
+
+        print(e)
+
+        return None

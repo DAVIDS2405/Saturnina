@@ -14,7 +14,7 @@ router = APIRouter(
 async def Iniciar_sesión_usuario(data: User_Login = Body(examples=[
     {"email": "sebastian2405lucero@hotmail.com",
      "password": "@asdaw@qweDb"
-    }]
+     }]
 
 )):
     response = await Login(data)
@@ -63,7 +63,7 @@ async def Nueva_Contrasenia(token: str, password: User_Recover_Password = Body(e
     return response
 
 
-@router.get("/profile", dependencies=[Depends(JWTBearer())])
+@router.get("/profile", dependencies=[Depends(JWTBearer)])
 async def User_Perfil(token: Request):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
@@ -71,18 +71,18 @@ async def User_Perfil(token: Request):
     return response
 
 
-@router.put("/update-password", dependencies=[Depends(JWTBearer())])
+@router.put("/update-password", dependencies=[Depends(JWTBearer)])
 async def Actualizar_contrasenia(token: Request, password: User_Recover_Password = Body(examples=[{
     "new_password": "change123",
     "check_password": "change123"
 }])):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
-    response = await User_profile_actualizar_contrasenia(password,token[1])
+    response = await User_profile_actualizar_contrasenia(password, token[1])
     return response
 
 
-@router.get("/user/{id}", dependencies=[Depends(JWTBearer())])
+@router.get("/user/{id}", dependencies=[Depends(JWTBearer)])
 async def Datos_cuenta(id: str, token: Request):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
@@ -90,7 +90,7 @@ async def Datos_cuenta(id: str, token: Request):
     return response
 
 
-@router.put("/user/{id}", dependencies=[Depends(JWTBearer())])
+@router.put("/user/{id}", dependencies=[Depends(JWTBearer)])
 async def Actualizar_Perfil(id: str, token: Request, data: User_Update = Body(examples=[{
     "nombre": "Sebastian",
     "apellido": "Lucero",
@@ -103,13 +103,14 @@ async def Actualizar_Perfil(id: str, token: Request, data: User_Update = Body(ex
     return response
 
 
-@router.delete("/user/{id}", dependencies=[Depends(JWTBearer())])
-async def Eliminar_Cuenta(id:str,token:Request):
+@router.delete("/user/{id}", dependencies=[Depends(JWTBearer)])
+async def Eliminar_Cuenta(id: str, token: Request):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
     return "Correo Eliminado"
-    
-@router.get("/order/{id_user}", dependencies=[Depends(JWTBearer())])
+
+
+@router.get("/order/{id_user}", dependencies=[Depends(JWTBearer)])
 async def Buscar_pedido(id_user: str, token: Request):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
@@ -117,7 +118,7 @@ async def Buscar_pedido(id_user: str, token: Request):
     return response
 
 
-@router.post("/order", dependencies=[Depends(JWTBearer())])
+@router.post("/order", dependencies=[Depends(JWTBearer)])
 async def Crear_pedido(token: Request, data: Order = Body(), transfer_image: UploadFile = File()):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
@@ -125,8 +126,8 @@ async def Crear_pedido(token: Request, data: Order = Body(), transfer_image: Upl
     return response
 
 
-@router.put("/order/{id_order}", dependencies=[Depends(JWTBearer())])
-async def Actualizar_orden(id_order: str, token: Request,transfer_image: UploadFile | None = None, data: Order_update = Body() ):
+@router.put("/order/{id_order}", dependencies=[Depends(JWTBearer)])
+async def Actualizar_orden(id_order: str, token: Request, transfer_image: UploadFile | None = None, data: Order_update = Body()):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
     response = await Update_order(id_order, data, transfer_image)
@@ -139,7 +140,7 @@ async def Todos_comentarios():
     return response
 
 
-@router.get("/comments/{user_id}", dependencies=[Depends(JWTBearer())])
+@router.get("/comments/{user_id}", dependencies=[Depends(JWTBearer)])
 async def Todos_comentarios_usuario(user_id: str, token: Request):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
@@ -147,7 +148,7 @@ async def Todos_comentarios_usuario(user_id: str, token: Request):
     return response
 
 
-@router.post("/comments", dependencies=[Depends(JWTBearer())])
+@router.post("/comments", dependencies=[Depends(JWTBearer)])
 async def Crear_comentario_producto(token: Request, data: Comment_product = Body(examples=[{
     "descripcion": "Me gusto mucho la decoracion les recomiendo",
     "user_id": "user_saturnina:duarv161uh97q49gus2r",
@@ -160,7 +161,7 @@ async def Crear_comentario_producto(token: Request, data: Comment_product = Body
     return response
 
 
-@router.put("/comments/{id_comment}", dependencies=[Depends(JWTBearer())])
+@router.put("/comments/{id_comment}", dependencies=[Depends(JWTBearer)])
 async def Actualizar_comentario_producto(id_comment: str, token: Request, data: Comment_product = Body(examples=[{
     "descripcion": "Me gusto mucho la decoracion les recomiendo",
     "user_id": "user_saturnina:duarv161uh97q49gus2r",
@@ -173,7 +174,7 @@ async def Actualizar_comentario_producto(id_comment: str, token: Request, data: 
     return response
 
 
-@router.post("/comments-general", dependencies=[Depends(JWTBearer())])
+@router.post("/comments-general", dependencies=[Depends(JWTBearer)])
 async def Crear_comentario_general(token: Request, data: Comment_general = Body(examples=[{
     "descripcion": "Me gusto mucho la decoración les recomiendo",
     "user_id": "user_saturnina:duarv161uh97q49gus2r",
@@ -185,7 +186,7 @@ async def Crear_comentario_general(token: Request, data: Comment_general = Body(
     return response
 
 
-@router.put("/comments-general/{id_comment}", dependencies=[Depends(JWTBearer())])
+@router.put("/comments-general/{id_comment}", dependencies=[Depends(JWTBearer)])
 async def Actualizar_comentario_general(id_comment: str, token: Request, data: Comment_general = Body(examples=[{
     "descripcion": "Me gusto mucho la decoración les recomiendo",
     "user_id": "user_saturnina:duarv161uh97q49gus2r",
@@ -197,7 +198,7 @@ async def Actualizar_comentario_general(id_comment: str, token: Request, data: C
     return response
 
 
-@router.get("/comments-general/{user_id}", dependencies=[Depends(JWTBearer())])
+@router.get("/comments-general/{user_id}", dependencies=[Depends(JWTBearer)])
 async def Todos_comentarios_generales_usuario(user_id: str, token: Request):
     token = token.headers.get("authorization").split()
     await Check_rol_user(token[1])
@@ -209,5 +210,3 @@ async def Todos_comentarios_generales_usuario(user_id: str, token: Request):
 async def Todos_comentarios_generales():
     response = await Get_comments_general()
     return response
-
-

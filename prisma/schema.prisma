@@ -1,0 +1,30 @@
+// database
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// generator
+generator client {
+    provider             = "prisma-client-py"
+    recursive_type_depth = 5
+}
+
+model Rol {
+    id       String @id @default(uuid())
+    type_rol String @unique
+    User     User[]
+}
+
+model User {
+    id            String  @id @default(uuid())
+    email         String  @unique
+    name          String
+    last_name     String
+    password      String
+    phone         String
+    token         String  @default("")
+    confirm_email Boolean @default(false)
+    rol_id        String
+    rol           Rol     @relation(fields: [rol_id], references: [id])
+}

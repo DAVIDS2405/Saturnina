@@ -1,202 +1,93 @@
-import smtplib
-import os
+import socket
+from fastapi import HTTPException, status
+from fastapi.templating import Jinja2Templates
+from jinja2.exceptions import TemplateNotFound
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from config.envs import settings
+from logger.logger import logger
+from datetime import datetime
+import smtplib
 
-class smtp_config:
-    
-    def __init__(self):
-        self.smtp_server = "smtp.gmail.com"
-        self.smtp_port = 587
-        self.smtp_user = os.getenv("USER_GMAIL")
-        self.smtp_password = os.getenv("PASSWORD_GMAIL")
 
-    def send_user(self, user_mail,token):
-        url_service = os.getenv("URL_SERVICE_WEB")
-        smtp = smtplib.SMTP(self.smtp_server, self.smtp_port)
-        smtp.starttls()
-        smtp.login(self.smtp_user, self.smtp_password)
+templates = Jinja2Templates(directory="app/templates")
 
-        mensaje = MIMEMultipart()
-        mensaje['From'] = self.smtp_user
-        mensaje['To'] = user_mail
-        mensaje['Subject'] = "Bienvenido es hora de tu registro"
-        content_html = f"""
-<html>
-<head>
-<title>Activación de Cuenta</title>
-<style>
-/* Estilos para el cuerpo del correo */
-body {{
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    margin: 0;
-    padding: 0;
-}}
 
-/* Contenedor principal */
-.container {{
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}}
+def send_email(name, token):
 
-/* Encabezado */
-.header {{
-    text-align: center;
-    padding: 20px 0;
-}}
+    smtp_server = settings.EMAIL_HOST
+    smtp_port = int(settings.EMAIL_HOST_PORT)
+    smtp_username = settings.EMAIL_HOST_USER
+    smtp_password = settings.EMAIL_HOST_PASSWORD
 
-/* Título */
-.title {{
-    font-size: 24px;
-    color: #333;
-}}
+    msg = MIMEMultipart()
+    msg['From'] = "Acme <onboarding@resend.dev>"
+    msg['To'] = "delivered@resend.dev"
+    msg['Subject'] = "¡Bienvenido completa tu registro!"
 
-/* Enlace de activación */
-.activation-link {{
-    display: block;
-    text-align: center;
-    margin-top: 20px;
-}}
+    try:
+        template = templates.get_template("email-send.html")
 
-/* Estilos para el botón */
-.activation-button {{
-    display: inline-block;
-    background-color: #007BFF;
-    color: #fff;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-}}
+        html_content = template.render(
+            name=name, year=datetime.year, token=token)
 
-/* Pie de página */
-.footer {{
-    text-align: center;
-    padding: 20px 0;
-    color: #777;
-}}
-</style>
-</head>
-<body>
-<div class="container">
-    <div class="header">
-        <h1 class="title">Activación de Cuenta</h1>
-    </div>
-    <p>Hola,</p>
-    <p>¡Gracias por registrarte! Para activar tu cuenta, por favor haz clic en el enlace de abajo:</p>
-    <a class="activation-link" href="https://{url_service}/confirmar/{token}">Activar Cuenta</a>
-    <div class="footer">
-        <p>Atentamente,</p>
-        <p>Tu Equipo de Soporte de Saturnina</p>
-    </div>
-</div>
-</body>
-</html>
-"""
+        msg.attach(MIMEText(html_content, 'html'))
 
-        
-        mensaje.attach(MIMEText(content_html, 'html'))
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+            server.close()
+            logger.info('Send Mail ok')
 
-        smtp.sendmail(self.smtp_user, user_mail, mensaje.as_string())
-        smtp.quit()
-        
-    def Recover_password(self,user_mail,token):
-    
-        url_service = os.getenv("URL_SERVICE_WEB")
-        smtp = smtplib.SMTP(self.smtp_server, self.smtp_port)
-        smtp.starttls()
-        smtp.login(self.smtp_user, self.smtp_password)
+        return HTTPException(
+            status_code=status.HTTP_201_CREATED, detail="Check you email to confirm your acount")
 
-        mensaje = MIMEMultipart()
-        mensaje['From'] = self.smtp_user
-        mensaje['To'] = user_mail
-        mensaje['Subject'] = "Recupera tu contraseña"
-        content_html = f"""
-<html>
-<head>
-    <title>Recuperación de Contraseña</title>
-    <style>
-        /* Estilos para el cuerpo del correo */
-        body {{
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }}
+    except socket.timeout as error:
+        logger.error(f"Connection timed out: {error}")
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="The connection to the email server timed out. Please try again later."
+        )
+    except TemplateNotFound as error:
+        logger.error(f"Template not found: {error}")
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail=f"The template {error.message} not found"
+        )
 
-        /* Contenedor principal */
-        .container {{
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }}
+    except Exception as e:
+        logger.info(f'Send mail error{e}')
+        return HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="SMTP have a error")
 
-        /* Encabezado */
-        .header {{
-            text-align: center;
-            padding: 20px 0;
-        }}
 
-        /* Título */
-        .title {{
-            font-size: 24px;
-            color: #333;
-        }}
+def send_email_reset_password(name, id):
 
-        /* Enlace de recuperación de contraseña */
-        .recovery-link {{
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-        }}
+    smtp_server = settings.EMAIL_HOST
+    smtp_port = int(settings.EMAIL_PORT)
+    smtp_username = settings.EMAIL_HOST_USER
+    smtp_password = settings.EMAIL_HOST_PASSWORD
 
-        /* Estilos para el botón */
-        .recovery-button {{
-            display: inline-block;
-            background-color: #007BFF;
-            color: #fff;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-        }}
+    msg = MIMEMultipart()
+    msg['From'] = "Acme <onboarding@resend.dev>"
+    msg['To'] = "delivered@resend.dev"
+    msg['Subject'] = "Recupera tu contraseña"
 
-        /* Pie de página */
-        .footer {{
-            text-align: center;
-            padding: 20px 0;
-            color: #777;
-        }}
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="header">
-        <h1 class="title">Recuperación de Contraseña</h1>
-    </div>
-    <p>Hola,</p>
-    <p>Has solicitado la recuperación de tu contraseña. Para restablecer tu contraseña, por favor haz clic en el enlace de abajo:</p>
-    <a class="recovery-link" href="http://{url_service}/cambiar-contrasena/{token}">Recuperar Contraseña</a>
-    <div class="footer">
-        <p>Atentamente,</p>
-        <p>Tu Equipo de Soporte de Saturnina</p>
-    </div>
-</div>
-</body>
-</html>
-"""
+    template = templates.get_template("recover-password.html")
 
-        
-        mensaje.attach(MIMEText(content_html, 'html'))
+    html_content = template.render(name=name, year=datetime.year, id=id)
 
-        smtp.sendmail(self.smtp_user, user_mail, mensaje.as_string())
-        smtp.quit()
-        
+    msg.attach(MIMEText(html_content, 'html'))
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+            server.close()
+            logger.info('Send Mail ok')
+        raise HTTPException(
+            status_code=status.HTTP_201_CREATED, detail="Check you email to change your password")
+    except Exception as e:
+        logger.info(f'Send mail error{e}')

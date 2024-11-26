@@ -1,9 +1,0 @@
-{
-    "cSpell.words": [],
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.autopep8"
-    },
-    "python.analysis.extraPaths": [
-        "./app"
-    ],
-}

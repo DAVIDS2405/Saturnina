@@ -1,8 +1,7 @@
 bcrypt
 cloudinary
-email-validator
 fastapi[all]
 surrealdb
 python-jose
-
+prisma;python_version>='3.11'
 
